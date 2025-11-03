@@ -1,0 +1,2 @@
+mosquitto_sub -h dm-lab.big.tuwien.ac.at -u modelling_bus -P Geheim1967 -v -t "#"
+

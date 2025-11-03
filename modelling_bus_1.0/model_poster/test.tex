@@ -1,0 +1,54 @@
+\documentclass[a4paper]{article}
+\usepackage{a4wide}
+
+\title{CDM Model: University}
+\author{~~}
+
+\begin{document}
+\maketitle
+
+\section{Quality types}
+\begin{itemize}
+    \item {\sf Student Name} with domain {\sf string}
+
+    \item {\sf Study Programme Name} with domain {\sf string}
+\end{itemize}
+
+\section{Concrete individual types}
+\begin{itemize}
+    \item {\sf Student Name}
+
+    \item {\sf Student}
+\end{itemize}
+
+\section{Relation types}
+\begin{itemize}
+    \item {\sf Studying: $\{$ Student Name studied; Student studying $\}$}
+
+          Reading(s):
+          \begin{itemize}
+              \item {\sf Student ... studies Student Name ...}
+
+              \item {\sf Student Name ... studied by Student ...}
+          \end{itemize}
+
+    \item {\sf Naming: $\{$ Student referred; Student Name Naming $\}$}
+
+          Reading(s):
+          \begin{itemize}
+              \item {\sf Student ... has Student Name ...}
+
+              \item {\sf Student Name ... of Student ...}
+          \end{itemize}
+
+    \item {\sf Naming: $\{$ Study Programme Name referring; Study Programme Name referring $\}$}
+
+          Reading(s):
+          \begin{itemize}
+              \item {\sf Study Programme Name ... goes by Study Programme Name ...}
+
+              \item {\sf Study Programme Name ... of Study Programme Name ...}
+          \end{itemize}
+\end{itemize}
+
+\end{document}

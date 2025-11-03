@@ -1,0 +1,88 @@
+[X] Hello world for models
+[ ] CDM should have its own ID generator. Separation of concerns!
+[ ] Keep alive at MQTT level. Laptop seems to drop the connection. 
+    => https://stackoverflow.com/questions/43759445/how-i-can-check-if-i-lose-connection-with-mqtt-broker 
+[ ] Cleaning functionality
+    - reportError based on lower level ones. Allow for just the message, and string
+    - jsonoperations as modelling_bus module?
+    - json.Marshal(m) into jsonoperations + error message??
+[ ] Document & clean code
+[ ] Enable links between models. Does not need code on the bus side.  
+    This is controlled by the poster. Which can simply do this by having an external reference of an element.
+    For instance using a local elementID linking to a agentID + modelID + JSONVersion + elementID  combination
+    Note that the "modelling_bus/bus-version-1.0/experiment-12.10.2025" part of a model URL is always 
+    fixed within one experiment, and that the modelID can be composed of a model-versions-ID and a version-ID
+[ ] Extend ....
+
+-----
+Open modelling bus:
+- Read state first ==> auto triggers the statePosts handler?
+- Then follow updates and/or considerings
+
+Cleaning FTP server!! 
+
+	// ====> CHECK need to OS (Dos, Linux, ...) independent "/" for local files.
+
+
+On the editor side, this means we need to have:
+- currentState on the XXModel side
+- consideredState on the XXModel side
+
+For the WRITER, On the bus side, we need to have two JSON strings:
+- previousState
+- currentState
+but ... as the LISTENER needs the considered state as well, it makes sense to have a copy of that one as well
+
+With operators from XXModels downwards:
+- PostTheState: 
+  overwrite previousState with the new one
+  overwrite currentState with the new one
+  push the new state on the bus
+- PostTheUpdate:
+  overwrite currentState with the new one
+  push the delta between the previousState and the currentState to the bus
+- PostTheConsidered:
+  push the delta between the currentState and the consideredState to the bus
+
+We cannot be listening and writing at the same time.
+So, maybe split this into two typing contexts:
+- BusWriter
+- BusListener
+
+But ... maybe have operators:
+- PostTheState
+- PostTheUpdate
+- PostTheConsidered
+- FetchTheState
+- FetchTheConsidered
+and keep the previous/current/considered in sync between the endpoints, where we indeed have only one posting actor.
+
+
+Models:
+- MQTT (r=1): ~/models/<model id>/<json version>/{s,u,c}/"{ timestamp, link }"
+- FTP: ~/models/<model id>/<json version>/{s,u,c}/<timestamp>.json
+
+Files:
+- FTP: ~/files/<poster id>/<format>/<timestamp>.extension
+
+Messages:
+- MQTT (r=0): ~/messages/<sender id>/<receiver id>/json/<json version>/{" json "}
+
+
+Dummy model 1 (type + instances): => Bus
+Pause
+Dummy model 2 (add constraints): => Bus
+
+Client 1:
+- Model to LaTeX to viewer
+
+Client 2:
+- Model to Prolog
+
+Client 3:
+- https://github.com/qax-os/excelize
+
+
+sub/predicate/object
+
+
