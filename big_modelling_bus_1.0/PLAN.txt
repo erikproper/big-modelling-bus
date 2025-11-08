@@ -14,6 +14,7 @@
     MQTT:
     - BBB/AAA/observations/basic/FFF/VVV/{s,u,c}
 
+[ ] "gopkg.in/ini.v1" should not be a layer 1 thing. Do this an "Opts" style way
 [ ] CDM should have its own ID generator. Separation of concerns!
 [ ] Keep alive at MQTT level. Laptop seems to drop the connection. 
     => https://stackoverflow.com/questions/43759445/how-i-can-check-if-i-lose-connection-with-mqtt-broker 

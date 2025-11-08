@@ -30,6 +30,7 @@ import (
 const (
 	modellingBusVersion = "bus-version-1.0"
 	jsonFileExtension   = ".json"
+	maxMQTTMessageSize  = 300
 )
 
 type (
@@ -88,7 +89,7 @@ func (b *TModellingBusConnector) ftpConnect() (*goftp.Client, error) {
 	return client, err
 }
 
-func (b *TModellingBusConnector) mkFTPArtefactPath(remoteFolderPath string) {
+func (b *TModellingBusConnector) mkFTPFilePath(remoteFolderPath string) {
 	// Connect to the FTP server
 	client, err := b.ftpConnect()
 	if err != nil {
@@ -106,7 +107,7 @@ func (b *TModellingBusConnector) mkFTPArtefactPath(remoteFolderPath string) {
 	client.Close()
 }
 
-func (b *TModellingBusConnector) postArtefactToFTP(topicPath, fileName, localFilePath string) {
+func (b *TModellingBusConnector) postFileToFTP(topicPath, fileName, localFilePath string) {
 	remoteFilePath := b.ftpAgentRoot + "/" + topicPath + "/" + fileName
 
 	// Connect to the FTP server
@@ -118,20 +119,20 @@ func (b *TModellingBusConnector) postArtefactToFTP(topicPath, fileName, localFil
 
 	file, err := os.Open(localFilePath)
 	if err != nil {
-		b.errorReporter("Error opening artefact for reading:", err)
+		b.errorReporter("Error opening File for reading:", err)
 		return
 	}
 
 	err = client.Store(remoteFilePath, file)
 	if err != nil {
-		b.errorReporter("Error uploading artefact to ftp server:", err)
+		b.errorReporter("Error uploading File to ftp server:", err)
 		return
 	}
 
 	client.Close()
 }
 
-func (b *TModellingBusConnector) postJSONArtefactToFTP(topicPath, fileName string, json []byte, timestamp string) {
+func (b *TModellingBusConnector) postJSONFileToFTP(topicPath, fileName string, json []byte, timestamp string) {
 	// Define the file paths
 	localFilePath := b.ftpLocalWorkFolder + "/" + fileName
 
@@ -141,7 +142,7 @@ func (b *TModellingBusConnector) postJSONArtefactToFTP(topicPath, fileName strin
 		b.errorReporter("Error writing to temporary file:", err)
 	}
 
-	b.postArtefactToFTP(topicPath, fileName, localFilePath)
+	b.postFileToFTP(topicPath, fileName, localFilePath)
 
 	// Cleanup the temporary file aftewards
 	os.Remove(localFilePath)
@@ -157,12 +158,12 @@ func (b *TModellingBusConnector) cleanFTPPath(topicPath, timestamp string) {
 
 	fileInfos, _ := client.ReadDir(b.ftpAgentRoot + "/" + topicPath)
 
-	// Remove older artefacts from the FTP server within the topicPath folder
+	// Remove older Files from the FTP server within the topicPath folder
 	for _, fileInfo := range fileInfos {
 		if timestamp == "" {
 			err = client.Delete(fileInfo.Name())
 			if err != nil {
-				b.errorReporter("Couldn't delete artefact:", err)
+				b.errorReporter("Couldn't delete File:", err)
 				return
 			}
 		} else {
@@ -176,22 +177,22 @@ func (b *TModellingBusConnector) cleanFTPPath(topicPath, timestamp string) {
 	}
 }
 
-func (b *TModellingBusConnector) ftpGetArtefact(server, port, remoteArtefactPath, localArtefactName string) {
+func (b *TModellingBusConnector) ftpGetFile(server, port, remoteFilePath, localFileName string) {
 	client, err := goftp.DialConfig(goftp.Config{}, server+":"+port)
 	if err != nil {
 		b.errorReporter("Something went wrong connecting to the FTP server", err)
 		return
 	}
 
-	// Download an artefact to disk
+	// Download an File to disk
 	// ====> CHECK need to OS (Dos, Linux, ...) independent "/"
-	artefact, err := os.Create(localArtefactName)
+	File, err := os.Create(localFileName)
 	if err != nil {
 		b.errorReporter("Something went wrong creating local file", err)
 		return
 	}
 
-	err = client.Retrieve(remoteArtefactPath, artefact)
+	err = client.Retrieve(remoteFilePath, File)
 	if err != nil {
 		b.errorReporter("Something went wrong retrieving file", err)
 		return
@@ -247,18 +248,18 @@ func (b *TModellingBusConnector) postEventToMQTT(topicPath, message string) {
 	token.Wait()
 }
 
-func (b *TModellingBusConnector) listenForRawArtefactLinkPostingsOnMQTT(AgentID, topicPath string, postingHandler func(string, string, string, string)) {
+func (b *TModellingBusConnector) listenForRawFileLinkPostingsOnMQTT(AgentID, topicPath string, postingHandler func(string, string, string, string)) {
 	b.listenToEventsOnMQTT(AgentID, topicPath, func(client mqtt.Client, msg mqtt.Message) {
-		var rawArtefactLink TRawArtefactLink
+		var rawFileLink TRawFileLink
 		/// Use a generic error checker for Unmarshal. Shouldreturn a bool
-		err := json.Unmarshal(msg.Payload(), &rawArtefactLink)
+		err := json.Unmarshal(msg.Payload(), &rawFileLink)
 		if err == nil {
-			postingHandler(rawArtefactLink.Server, rawArtefactLink.Port, rawArtefactLink.Path, rawArtefactLink.Timestamp)
+			postingHandler(rawFileLink.Server, rawFileLink.Port, rawFileLink.Path, rawFileLink.Timestamp)
 		}
 	})
 }
 
-type TJSONArtefactLink struct {
+type TJSONFileLink struct {
 	Server      string `json:"server"`
 	Port        string `json:"port"`
 	Path        string `json:"path"`
@@ -266,16 +267,16 @@ type TJSONArtefactLink struct {
 	JSONVersion string `json:"json version"`
 }
 
-func (b *TModellingBusConnector) postJSONArtefactLinkToMQTT(topicPath, jsonArtefactName, jsonVersion, timestamp string) {
-	var jsonArtefactLink TJSONArtefactLink
+func (b *TModellingBusConnector) postJSONFileLinkToMQTT(topicPath, jsonFileName, jsonVersion, timestamp string) {
+	var jsonFileLink TJSONFileLink
 
-	jsonArtefactLink.Server = b.ftpServer
-	jsonArtefactLink.Port = b.ftpPort
-	jsonArtefactLink.Path = b.ftpAgentRoot + "/" + topicPath + "/" + jsonArtefactName
-	jsonArtefactLink.Timestamp = timestamp
-	jsonArtefactLink.JSONVersion = jsonVersion
+	jsonFileLink.Server = b.ftpServer
+	jsonFileLink.Port = b.ftpPort
+	jsonFileLink.Path = b.ftpAgentRoot + "/" + topicPath + "/" + jsonFileName
+	jsonFileLink.Timestamp = timestamp
+	jsonFileLink.JSONVersion = jsonVersion
 
-	jsonData, err := json.Marshal(jsonArtefactLink)
+	jsonData, err := json.Marshal(jsonFileLink)
 	if err != nil {
 		b.errorReporter("Something went wrong JSONing the link data", err)
 		return
@@ -284,33 +285,33 @@ func (b *TModellingBusConnector) postJSONArtefactLinkToMQTT(topicPath, jsonArtef
 	b.postEventToMQTT(topicPath, string(jsonData))
 }
 
-func (b *TModellingBusConnector) ListenForJSONArtefactLinkPostingsOnMQTT(AgentID, topicPath string, postingHandler func(string, string, string, string, string)) {
+func (b *TModellingBusConnector) ListenForJSONFileLinkPostingsOnMQTT(AgentID, topicPath string, postingHandler func(string, string, string, string, string)) {
 	b.listenToEventsOnMQTT(AgentID, topicPath, func(client mqtt.Client, msg mqtt.Message) {
-		var jsonArtefactLink TJSONArtefactLink
+		var jsonFileLink TJSONFileLink
 
-		err := json.Unmarshal(msg.Payload(), &jsonArtefactLink)
+		err := json.Unmarshal(msg.Payload(), &jsonFileLink)
 		if err == nil {
-			postingHandler(jsonArtefactLink.Server, jsonArtefactLink.Port, jsonArtefactLink.Path, jsonArtefactLink.Timestamp, jsonArtefactLink.JSONVersion)
+			postingHandler(jsonFileLink.Server, jsonFileLink.Port, jsonFileLink.Path, jsonFileLink.Timestamp, jsonFileLink.JSONVersion)
 		}
 	})
 }
 
-type TRawArtefactLink struct {
+type TRawFileLink struct {
 	Server    string `json:"server"`
 	Port      string `json:"port"`
 	Path      string `json:"Path"`
 	Timestamp string `json:"timestamp"`
 }
 
-func (b *TModellingBusConnector) postRawArtefactLinkToMQTT(topicPath, rawArtefactName, timestamp string) {
-	var rawArtefactLink TRawArtefactLink
+func (b *TModellingBusConnector) postRawFileLinkToMQTT(topicPath, rawFileName, timestamp string) {
+	var rawFileLink TRawFileLink
 
-	rawArtefactLink.Server = b.ftpServer
-	rawArtefactLink.Port = b.ftpPort
-	rawArtefactLink.Path = b.ftpAgentRoot + "/" + topicPath + "/" + rawArtefactName
-	rawArtefactLink.Timestamp = timestamp
+	rawFileLink.Server = b.ftpServer
+	rawFileLink.Port = b.ftpPort
+	rawFileLink.Path = b.ftpAgentRoot + "/" + topicPath + "/" + rawFileName
+	rawFileLink.Timestamp = timestamp
 
-	data, err := json.Marshal(rawArtefactLink)
+	data, err := json.Marshal(rawFileLink)
 	if err != nil {
 		b.errorReporter("Something went wrong JSONing the link data", err)
 		return
@@ -323,10 +324,10 @@ func (b *TModellingBusConnector) postRawArtefactLinkToMQTT(topicPath, rawArtefac
  * Combined FTP + MQTT connection
  */
 
-func (b *TModellingBusConnector) mkArtefactPath(remoteFolderPath string) {
+func (b *TModellingBusConnector) mkFilePath(remoteFolderPath string) {
 	// This may look odd, but it makes it clear that we do not need to do any work for
 	// MQTT to ensure a path exists.
-	b.mkFTPArtefactPath(remoteFolderPath)
+	b.mkFTPFilePath(remoteFolderPath)
 }
 
 func (b *TModellingBusConnector) mkEventPath(remoteFolderPath string) {
@@ -336,23 +337,23 @@ func (b *TModellingBusConnector) mkEventPath(remoteFolderPath string) {
 	// MQTT does automatically create topic trees, whereas FTP does not ...
 }
 
-func (b *TModellingBusConnector) postJSONArtefact(topicPath, jsonVersion, timestamp string, json []byte) {
+func (b *TModellingBusConnector) postJSONFile(topicPath, jsonVersion, timestamp string, json []byte) {
 	fileName := timestamp + jsonFileExtension
 
-	b.postJSONArtefactToFTP(topicPath, fileName, json, timestamp)
-	b.postJSONArtefactLinkToMQTT(topicPath, fileName, jsonVersion, timestamp)
+	b.postJSONFileToFTP(topicPath, fileName, json, timestamp)
+	b.postJSONFileLinkToMQTT(topicPath, fileName, jsonVersion, timestamp)
 }
 
-func (b *TModellingBusConnector) postRawArtefact(topicPath, fileName, localFilePath, timestamp string) {
-	b.postArtefactToFTP(topicPath, fileName, localFilePath)
-	b.postRawArtefactLinkToMQTT(topicPath, fileName, timestamp)
+func (b *TModellingBusConnector) postRawFile(topicPath, fileName, localFilePath, timestamp string) {
+	b.postFileToFTP(topicPath, fileName, localFilePath)
+	b.postRawFileLinkToMQTT(topicPath, fileName, timestamp)
 }
 
-func (b *TModellingBusConnector) listenForJSONArtefactPostings(AgentID, topicPath string, postingHandler func(string, []byte)) {
-	b.ListenForJSONArtefactLinkPostingsOnMQTT(AgentID, topicPath, func(server, port, path, timestamp, jsonVersion string) {
+func (b *TModellingBusConnector) listenForJSONFilePostings(AgentID, topicPath string, postingHandler func(string, []byte)) {
+	b.ListenForJSONFileLinkPostingsOnMQTT(AgentID, topicPath, func(server, port, path, timestamp, jsonVersion string) {
 		tempFilePath := b.ftpLocalWorkFolder + "/" + b.GetTimestamp() + jsonFileExtension
 
-		b.ftpGetArtefact(server, port, path, tempFilePath)
+		b.ftpGetFile(server, port, path, tempFilePath)
 
 		jsonPayload, err := os.ReadFile(tempFilePath)
 		if err == nil {
@@ -400,6 +401,10 @@ func (b *TModellingBusConnector) GetTimestamp() string {
 
 func (b *TModellingBusConnector) GetNewID() string {
 	return fmt.Sprintf("%s-%s", b.AgentID, b.GetTimestamp())
+}
+
+func EventPayloadAllowed (payload []byte) bool {
+	return len(payload) <= maxMQTTMessageSize
 }
 
 /*

@@ -1,6 +1,6 @@
 /*
  *
- * Package: jsonoperations
+ * Package: mbconnect
  * Module:  jsonoperations
  *
  * ..... ... .. .
@@ -11,7 +11,7 @@
  *
  */
 
-package jsonoperations
+package mbconnect
 
 import (
 	"encoding/json"
