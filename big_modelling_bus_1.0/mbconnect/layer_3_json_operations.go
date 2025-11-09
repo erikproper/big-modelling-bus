@@ -1,7 +1,7 @@
 /*
  *
  * Package: mbconnect
- * Layer:   2 (or higher??)
+ * Layer:   3
  * Module:  json_operations
  *
  * ..... ... .. .
