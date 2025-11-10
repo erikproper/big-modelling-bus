@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 )
 
 type (
@@ -28,8 +27,7 @@ type (
 		modellingBusRepositoryConnector *tModellingBusRepositoryConnector
 		modellingBusEventsConnector     *tModellingBusEventsConnector
 
-		AgentID, // used "up" here?
-		experimentID, // used "up" here?
+		agentID,
 		lastTimeTimestamp string
 
 		timestampCounter int
@@ -38,128 +36,96 @@ type (
 	}
 )
 
-/*
- *
- * Internal functionality
- *
- */
+type tEvent struct {
+	tRepositoryEvent
 
-/*
- * MQTT connection
- */
-
-// ///
-func (b *TModellingBusConnector) listenForRawFileLinkPostingsOnMQTT(AgentID, topicPath string, postingHandler func(string, string, string, string)) {
-	b.modellingBusEventsConnector.listenForEvents(AgentID, topicPath, func(message []byte) {
-		var rawFileLink TRawFileLink
-		/// Use a generic error checker for Unmarshal. Shouldreturn a bool
-		err := json.Unmarshal(message, &rawFileLink)
-		if err == nil {
-			postingHandler(rawFileLink.Server, rawFileLink.Port, rawFileLink.Path, rawFileLink.Timestamp)
-		}
-	})
+	Timestamp   string          `json:"timestamp"`
+	JSONMessage json.RawMessage `json:"message,omitempty"`
 }
 
-type TJSONFileLink struct {
-	Server      string `json:"server"`
-	Port        string `json:"port"`
-	Path        string `json:"path"`
-	Timestamp   string `json:"timestamp"`
-	JSONVersion string `json:"json version"`
-}
+func (b *TModellingBusConnector) postFile(topicPath, fileName, fileExtension, localFilePath, timestamp string) {
+	event := tEvent{}
+	event.Timestamp = timestamp
 
-type TRawFileLink struct {
-	Server    string `json:"server"`
-	Port      string `json:"port"`
-	Path      string `json:"path"`
-	Timestamp string `json:"timestamp"`
-}
+	event.tRepositoryEvent = b.modellingBusRepositoryConnector.pushFileToRepository(topicPath, fileName, fileExtension, localFilePath)
 
-func (b *TModellingBusConnector) postJSONFileLinkToMQTT(topicPath, jsonFileName, jsonVersion, timestamp string) {
-	var jsonFileLink TJSONFileLink
-
-	jsonFileLink.Server = b.modellingBusRepositoryConnector.ftpServer
-	jsonFileLink.Port = b.modellingBusRepositoryConnector.ftpPort
-	jsonFileLink.Path = b.modellingBusRepositoryConnector.ftpAgentRoot + "/" + topicPath + "/" + jsonFileName
-	jsonFileLink.Timestamp = timestamp
-	jsonFileLink.JSONVersion = jsonVersion
-
-	jsonData, err := json.Marshal(jsonFileLink)
+	message, err := json.Marshal(event)
 	if err != nil {
 		b.errorReporter("Something went wrong JSONing the link data", err)
 		return
 	}
 
-	b.modellingBusEventsConnector.postEvent(topicPath, jsonData)
+	b.modellingBusEventsConnector.postEvent(topicPath, message)
 }
 
-func (b *TModellingBusConnector) listenForJSONFileLinkPostingsOnMQTT(AgentID, topicPath string, postingHandler func(string, string, string, string, string)) {
-	b.modellingBusEventsConnector.listenForEvents(AgentID, topicPath, func(message []byte) {
-		var jsonFileLink TJSONFileLink
+func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath string, postingHandler func(string)) {
+	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
+		event := tEvent{}
 
-		err := json.Unmarshal(message, &jsonFileLink)
+		// Use a generic error checker for Unmarshal. Should return a bool
+		err := json.Unmarshal(message, &event)
 		if err == nil {
-			postingHandler(jsonFileLink.Server, jsonFileLink.Port, jsonFileLink.Path, jsonFileLink.Timestamp, jsonFileLink.JSONVersion)
+			tempFilePath := b.modellingBusRepositoryConnector.getFileFromRepository(event.tRepositoryEvent, GetTimestamp())
+
+			postingHandler(tempFilePath)
 		}
+
 	})
 }
 
-func (b *TModellingBusConnector) postRawFileLinkToMQTT(topicPath, rawFileName, timestamp string) {
-	var rawFileLink TRawFileLink
+func (b *TModellingBusConnector) postJSON(topicPath, jsonVersion string, jsonMessage []byte, timestamp string) {
+	if b.modellingBusEventsConnector.eventPayloadAllowed(jsonMessage) {
+		event := tEvent{}
+		event.Timestamp = timestamp
+		event.JSONMessage = jsonMessage
 
-	rawFileLink.Server = b.modellingBusRepositoryConnector.ftpServer
-	rawFileLink.Port = b.modellingBusRepositoryConnector.ftpPort
-	rawFileLink.Path = b.modellingBusRepositoryConnector.ftpAgentRoot + "/" + topicPath + "/" + rawFileName
-	rawFileLink.Timestamp = timestamp
-
-	data, err := json.Marshal(rawFileLink)
-	if err != nil {
-		b.errorReporter("Something went wrong JSONing the link data", err)
-		return
-	}
-
-	b.modellingBusEventsConnector.postEvent(topicPath, data)
-}
-
-/*
- * Combined FTP + MQTT connection
- */
-
-func (b *TModellingBusConnector) postJSONFile(topicPath, jsonVersion, timestamp string, json []byte) {
-	fileName := timestamp + jsonFileExtension
-
-	b.modellingBusRepositoryConnector.pushJSONAsFileToRepository(topicPath, fileName, json, timestamp)
-	b.postJSONFileLinkToMQTT(topicPath, fileName, jsonVersion, timestamp)
-}
-
-func (b *TModellingBusConnector) postRawFile(topicPath, fileName, localFilePath, timestamp string) {
-	b.modellingBusRepositoryConnector.pushFileToRepository(topicPath, fileName, localFilePath)
-	b.postRawFileLinkToMQTT(topicPath, fileName, timestamp)
-}
-
-// CLARIFY things above. Some of this may need to move up one layer
-
-// func (b *TModellingBusConnector) postRawFile (...)
-// func (b *TModellingBusConnector) listenForRawFileEvent(AgentID, topicPath string, postingHandler func(string, []byte)) {
-
-// func (b *TModellingBusConnector) postJSONEventAsFile (...)
-// func (b *TModellingBusConnector) postJSONEvent (...)
-// func (b *TModellingBusConnector) listenForJSONEvents(AgentID, topicPath string, postingHandler func(string, []byte)) {
-
-func (b *TModellingBusConnector) listenForJSONFilePostings(AgentID, topicPath string, postingHandler func(string, []byte)) {
-	b.listenForJSONFileLinkPostingsOnMQTT(AgentID, topicPath, func(server, port, path, timestamp, jsonVersion string) {
-		tempFilePath := b.modellingBusRepositoryConnector.ftpLocalWorkDirectory + "/" + b.GetTimestamp() + jsonFileExtension
-
-		b.modellingBusRepositoryConnector.getFileFromRepository(server, port, path, tempFilePath)
-
-		jsonPayload, err := os.ReadFile(tempFilePath)
-		if err == nil {
-			postingHandler(timestamp, jsonPayload)
-		} else {
-			b.errorReporter("Something went wrong retrieving file", err)
+		message, err := json.Marshal(event)
+		if err != nil {
+			b.errorReporter("Something went wrong JSONing the link data", err)
+			return
 		}
 
-		os.Remove(tempFilePath)
+		b.modellingBusEventsConnector.postEvent(topicPath, message)
+
+		// CLEAN any old ones on the ftp server!!
+	} else {
+		event := tEvent{}
+		event.Timestamp = timestamp
+
+		event.tRepositoryEvent = b.modellingBusRepositoryConnector.pushJSONAsFileToRepository(topicPath, jsonMessage)
+
+		message, err := json.Marshal(event)
+		if err != nil {
+			b.errorReporter("Something went wrong JSONing the link data", err)
+			return
+		}
+
+		b.modellingBusEventsConnector.postEvent(topicPath, message)
+	}
+}
+
+func (b *TModellingBusConnector) listenForJSONPostings(agentID, topicPath string, postingHandler func([]byte, string)) {
+	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
+		event := tEvent{}
+
+		// Use a generic error checker for Unmarshal. Should return a bool
+		err := json.Unmarshal(message, &event)
+		if err == nil {
+			if len(event.JSONMessage) > 0 {
+				postingHandler(event.JSONMessage, event.Timestamp)
+			} else {
+				tempFilePath := b.modellingBusRepositoryConnector.getFileFromRepository(event.tRepositoryEvent, GetTimestamp())
+
+				jsonPayload, err := os.ReadFile(tempFilePath)
+				if err == nil {
+					postingHandler(jsonPayload, event.Timestamp)
+				} else {
+					b.errorReporter("Something went wrong while retrieving file", err)
+				}
+
+				os.Remove(tempFilePath)
+			}
+		}
 	})
 }
 
@@ -170,34 +136,11 @@ func (b *TModellingBusConnector) listenForJSONFilePostings(AgentID, topicPath st
  */
 
 /*
- * Time stamping and unique IDs
+ * Unique IDs
  */
 
-func (b *TModellingBusConnector) GetTimestamp() string {
-	CurrenTime := time.Now()
-
-	timeTimestamp := fmt.Sprintf(
-		"%04d-%02d-%02d-%02d-%02d-%02d", //-%06d
-		CurrenTime.Year(),
-		CurrenTime.Month(),
-		CurrenTime.Day(),
-		CurrenTime.Hour(),
-		CurrenTime.Minute(),
-		CurrenTime.Second())
-	//		CurrenTime.Nanosecond()/1000)
-
-	if timeTimestamp == b.lastTimeTimestamp {
-		b.timestampCounter++
-	} else {
-		b.lastTimeTimestamp = timeTimestamp
-		b.timestampCounter = 0
-	}
-
-	return fmt.Sprintf("%s-%02d", b.lastTimeTimestamp, b.timestampCounter)
-}
-
 func (b *TModellingBusConnector) GetNewID() string {
-	return fmt.Sprintf("%s-%s", b.AgentID, b.GetTimestamp())
+	return fmt.Sprintf("%s-%s", b.agentID, GetTimestamp())
 }
 
 /*
@@ -214,13 +157,11 @@ func (b *TModellingBusConnector) Initialise(configPath string, errorReporter TEr
 		fmt.Println("Config file not found ... need to fix this")
 	}
 
-	b.experimentID = b.configData.GetValue("", "experiment").String() // ever used beyond the calls below?
-	b.AgentID = b.configData.GetValue("", "agent").String()           // ever used beyond the calls below?
+	b.agentID = b.configData.GetValue("", "agent").String()
 
-	topicBase := modellingBusVersion + "/" + b.experimentID
-
-	b.modellingBusRepositoryConnector = createModellingBusRepositoryConnector(topicBase, b.AgentID, b.configData, b.errorReporter)
-	b.modellingBusEventsConnector = createModellingBusEventsConnector(topicBase, b.AgentID, b.configData, b.errorReporter)
+	topicBase := modellingBusVersion + "/" + b.configData.GetValue("", "experiment").String()
+	b.modellingBusRepositoryConnector = createModellingBusRepositoryConnector(topicBase, b.agentID, b.configData, b.errorReporter)
+	b.modellingBusEventsConnector = createModellingBusEventsConnector(topicBase, b.agentID, b.configData, b.errorReporter)
 
 	b.lastTimeTimestamp = ""
 	b.timestampCounter = 0

@@ -1,10 +1,9 @@
-[X] Hello world for models
+[ ] Refactor
 
 [ ] Principles
 - Separation of concerns across layers
 - Use packages, but wrap non-standard packages
 
-[ ] Refactor
 - Layer 1: 
   - Three types 
     - TConfig
@@ -25,20 +24,24 @@
     MQTT:
     - BBB/AAA/observations/basic/FFF/VVV/{s,u,c}
 
-[ ] "gopkg.in/ini.v1" should not be a layer 1 thing. Do this an "Opts" style way
 [ ] CDM should have its own ID generator. Separation of concerns!
+
 [ ] Keep alive at MQTT level. Laptop seems to drop the connection. 
     => https://stackoverflow.com/questions/43759445/how-i-can-check-if-i-lose-connection-with-mqtt-broker 
+
 [ ] Cleaning functionality
     - reportError based on lower level ones. Allow for just the message, and string
     - jsonoperations as modelling_bus module?
     - json.Marshal(m) into jsonoperations + error message??
+
 [ ] Document & clean code
+
 [ ] Enable links between models. Does not need code on the bus side.  
     This is controlled by the poster. Which can simply do this by having an external reference of an element.
     For instance using a local elementID linking to a agentID + modelID + JSONVersion + elementID  combination
     Note that the "modelling_bus/bus-version-1.0/experiment-12.10.2025" part of a model URL is always 
     fixed within one experiment, and that the modelID can be composed of a model-versions-ID and a version-ID
+
 [ ] Extend ....
 
 -----

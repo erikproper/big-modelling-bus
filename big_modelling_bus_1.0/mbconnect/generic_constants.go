@@ -17,4 +17,5 @@ package mbconnect
 const (
 	modellingBusVersion = "bus-version-1.0"
 	jsonFileExtension   = ".json"
+	jsonFileName        = "message"
 )

@@ -33,9 +33,10 @@ func (b *TModellingBusConnector) PostFile(context, format, localFilePath string)
 		"/" + context +
 		"/" + format
 
-	timestamp := b.GetTimestamp()
-	fileName := timestamp + filepath.Ext(localFilePath)
+	timestamp := GetTimestamp()
+	fileName := timestamp
+	fileExt := filepath.Ext(localFilePath)
 
 	fmt.Println("-----")
-	b.postRawFile(topicPath, fileName, localFilePath, timestamp)
+	b.postFile(topicPath, fileName, fileExt, localFilePath, timestamp)
 }

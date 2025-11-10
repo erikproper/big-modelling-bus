@@ -91,7 +91,7 @@ func (b *TModellingBusModelConnector) postModelsJSONDelta(modelsDeltaTopicPath s
 	}
 
 	delta := TMQTTDelta{}
-	delta.Timestamp = b.ModellingBusConnector.GetTimestamp()
+	delta.Timestamp = GetTimestamp()
 	delta.StateTimestamp = b.timestamp
 	delta.Operations = deltaOperationsJSON
 
@@ -101,7 +101,7 @@ func (b *TModellingBusModelConnector) postModelsJSONDelta(modelsDeltaTopicPath s
 		return
 	}
 
-	b.ModellingBusConnector.postJSONFile(modelsDeltaTopicPath, b.modelJSONVersion, delta.Timestamp, deltaJSON)
+	b.ModellingBusConnector.postJSON(modelsDeltaTopicPath, b.modelJSONVersion, deltaJSON, delta.Timestamp)
 }
 
 func (b *TModellingBusModelConnector) processModelsJSONDeltaPosting(currentJSONState json.RawMessage, deltaJSON []byte) (json.RawMessage, bool) {
@@ -142,7 +142,7 @@ func (b *TModellingBusModelConnector) Initialise(ModellingBusConnector TModellin
 	b.ModelCurrentContent = []byte{}
 	b.ModelUpdatedContent = []byte{}
 	b.ModelConsideredContent = []byte{}
-	b.timestamp = b.ModellingBusConnector.GetTimestamp()
+	b.timestamp = GetTimestamp()
 	b.stateCommunicated = false
 }
 
@@ -188,7 +188,7 @@ func (b *TModellingBusModelConnector) PostState(stateJSON []byte, err error) {
 		return
 	}
 
-	b.timestamp = b.ModellingBusConnector.GetTimestamp()
+	b.timestamp = GetTimestamp()
 	b.ModelCurrentContent = stateJSON
 
 	if err != nil {
@@ -196,7 +196,7 @@ func (b *TModellingBusModelConnector) PostState(stateJSON []byte, err error) {
 		return
 	}
 
-	b.ModellingBusConnector.postJSONFile(b.modelsStateTopicPath(b.ModelID), b.modelJSONVersion, b.timestamp, stateJSON)
+	b.ModellingBusConnector.postJSON(b.modelsStateTopicPath(b.ModelID), b.modelJSONVersion, stateJSON, b.timestamp)
 	b.stateCommunicated = true
 }
 
@@ -204,8 +204,10 @@ func (b *TModellingBusModelConnector) PostState(stateJSON []byte, err error) {
  * Listening
  */
 
+//listenForJSONPostings(agentID, topicPath string, postingHandler func([]byte))
+
 func (b *TModellingBusModelConnector) ListenToStatePostings(agentID, ModelID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.modelsStateTopicPath(ModelID), func(timestamp string, json []byte) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.modelsStateTopicPath(ModelID), func(json []byte, timestamp string) {
 		b.ModelCurrentContent = json
 		b.ModelUpdatedContent = json
 		b.ModelConsideredContent = json
@@ -216,7 +218,7 @@ func (b *TModellingBusModelConnector) ListenToStatePostings(agentID, ModelID str
 }
 
 func (b *TModellingBusModelConnector) ListenToUpdatePostings(agentID, ModelID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.modelsUpdateTopicPath(ModelID), func(timestamp string, json []byte) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.modelsUpdateTopicPath(ModelID), func(json []byte, timestamp string) {
 		ok := false
 		b.ModelUpdatedContent, ok = b.processModelsJSONDeltaPosting(b.ModelCurrentContent, json)
 		if ok {
@@ -230,7 +232,7 @@ func (b *TModellingBusModelConnector) ListenToUpdatePostings(agentID, ModelID st
 }
 
 func (b *TModellingBusModelConnector) ListenToConsideringPostings(agentID, ModelID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.modelsConsideringTopicPath(ModelID), func(timestamp string, json []byte) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.modelsConsideringTopicPath(ModelID), func(json []byte, timestamp string) {
 		ok := false
 		b.ModelConsideredContent, ok = b.processModelsJSONDeltaPosting(b.ModelUpdatedContent, json)
 		if ok {
