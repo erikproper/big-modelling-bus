@@ -285,7 +285,7 @@ func CreateCDMLaTeXWriter(config string, errorReporter mbconnect.TErrorReporter)
 	return CDMModelLaTeXWriter
 }
 
-func (l *TCDMModelLaTeXWriter) ListenToModellingBus(ModellingBusModelListener mbconnect.TModellingBusModelConnector, agentId, modelID string) {
+func (l *TCDMModelLaTeXWriter) ListenToModellingBus(ModellingBusModelListener mbconnect.TModellingBusArtefactConnector, agentId, modelID string) {
 	ModellingBusModelListener.ListenToStatePostings(agentId, modelID, func() {
 		fmt.Println("Received state")
 		l.CurrentModel.GetStateFromBus(ModellingBusModelListener)

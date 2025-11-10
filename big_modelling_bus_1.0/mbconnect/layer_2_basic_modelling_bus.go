@@ -8,7 +8,7 @@
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.10.2025
+ * Version of: XX.11.2025
  *
  */
 
@@ -108,7 +108,6 @@ func (b *TModellingBusConnector) listenForJSONPostings(agentID, topicPath string
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
 		event := tEvent{}
 
-		// Use a generic error checker for Unmarshal. Should return a bool
 		err := json.Unmarshal(message, &event)
 		if err == nil {
 			if len(event.JSONMessage) > 0 {
@@ -144,33 +143,40 @@ func (b *TModellingBusConnector) GetNewID() string {
 }
 
 /*
- * Initialisation & creation
+ * Creation
  */
 
-func (b *TModellingBusConnector) Initialise(configPath string, errorReporter TErrorReporter) {
+func CreateModellingBusConnector(configPath string, errorReporter TErrorReporter) TModellingBusConnector {
 	var ok bool
 
+	modellingBusConnector := TModellingBusConnector{}
 	// This needs to be done on the top level ...
-	b.errorReporter = errorReporter
-	b.configData, ok = LoadConfig(configPath, b.errorReporter)
+	modellingBusConnector.errorReporter = errorReporter
+	modellingBusConnector.configData, ok = LoadConfig(configPath, modellingBusConnector.errorReporter)
 	if !ok {
 		fmt.Println("Config file not found ... need to fix this")
 	}
 
-	b.agentID = b.configData.GetValue("", "agent").String()
+	modellingBusConnector.agentID = modellingBusConnector.configData.GetValue("", "agent").String()
 
-	topicBase := modellingBusVersion + "/" + b.configData.GetValue("", "experiment").String()
-	b.modellingBusRepositoryConnector = createModellingBusRepositoryConnector(topicBase, b.agentID, b.configData, b.errorReporter)
-	b.modellingBusEventsConnector = createModellingBusEventsConnector(topicBase, b.agentID, b.configData, b.errorReporter)
+	topicBase := modellingBusVersion + "/" + modellingBusConnector.configData.GetValue("", "experiment").String()
 
-	b.lastTimeTimestamp = ""
-	b.timestampCounter = 0
+	modellingBusConnector.modellingBusRepositoryConnector =
+		createModellingBusRepositoryConnector(
+			topicBase,
+			modellingBusConnector.agentID,
+			modellingBusConnector.configData,
+			modellingBusConnector.errorReporter)
 
-}
+	modellingBusConnector.modellingBusEventsConnector =
+		createModellingBusEventsConnector(
+			topicBase,
+			modellingBusConnector.agentID,
+			modellingBusConnector.configData,
+			modellingBusConnector.errorReporter)
 
-func CreateModellingBusConnector(config string, errorReporter TErrorReporter) TModellingBusConnector {
-	modellingBusConnector := TModellingBusConnector{}
-	modellingBusConnector.Initialise(config, errorReporter)
+	modellingBusConnector.lastTimeTimestamp = ""
+	modellingBusConnector.timestampCounter = 0
 
 	return modellingBusConnector
 }

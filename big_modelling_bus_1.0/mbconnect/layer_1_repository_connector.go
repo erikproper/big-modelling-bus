@@ -8,7 +8,7 @@
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.10.2025
+ * Version of: XX.11.2025
  *
  */
 
@@ -127,7 +127,7 @@ func (r *tModellingBusRepositoryConnector) pushJSONAsFileToRepository(topicPath 
 		r.errorReporter("Error writing to temporary file:", err)
 	}
 
-	// Cleanup the temporary file aftewards
+	// Cleanup the temporary file afterwards
 	defer os.Remove(localFilePath)
 
 	return r.pushFileToRepository(topicPath, jsonFileName, jsonFileExtension, localFilePath)

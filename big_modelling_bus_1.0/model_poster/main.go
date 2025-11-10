@@ -28,7 +28,7 @@ func main() {
 
 	ModellingBusConnector := mbconnect.CreateModellingBusConnector(config, reportError)
 
-	ModellingBusConnector.PostFile("context", "golang", "main.go")
+	ModellingBusConnector.PostRawArtefact("context", "golang", "main.go")
 
 	// Note that the 0001 is for local use. No issue to e.g. make this into 0001/02 to indicate version numbers
 	Model := cdm.CreateCDMPoster(ModellingBusConnector, "0001")

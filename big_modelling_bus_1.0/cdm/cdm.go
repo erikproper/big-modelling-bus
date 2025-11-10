@@ -29,10 +29,10 @@ type (
 	}
 
 	TCDMModel struct {
-		ModelName                 string                                `json:"model name"`
-		ModellingBusModelReporter mbconnect.TModellingBusModelConnector `json:"-"`
-		TypeIDCount               int                                   `json:"-"`
-		InstanceIDCount           int                                   `json:"-"`
+		ModelName                    string                                   `json:"model name"`
+		ModellingBusArtefactReporter mbconnect.TModellingBusArtefactConnector `json:"-"`
+		TypeIDCount                  int                                      `json:"-"`
+		InstanceIDCount              int                                      `json:"-"`
 
 		// For types
 		TypeName map[string]string `json:"type names"`
@@ -78,7 +78,7 @@ func (m *TCDMModel) Clean() {
 
 func (m *TCDMModel) NewElementID() string {
 	// Check should be at the busconnector level ...
-	return m.ModellingBusModelReporter.ModellingBusConnector.GetNewID()
+	return m.ModellingBusArtefactReporter.ModellingBusConnector.GetNewID()
 }
 
 func (m *TCDMModel) SetModelName(name string) {
@@ -174,27 +174,27 @@ func CreateCDMModel() TCDMModel {
 func CreateCDMPoster(ModellingBusConnector mbconnect.TModellingBusConnector, modelID string) TCDMModel {
 	CDMPosterModel := CreateCDMModel()
 
-	CDMPosterModel.ModellingBusModelReporter = mbconnect.CreateModellingBusModelConnector(ModellingBusConnector, ModelJSONVersion)
-	CDMPosterModel.ModellingBusModelReporter.PrepareForPosting(modelID)
+	CDMPosterModel.ModellingBusArtefactReporter = mbconnect.CreateModellingBusModelConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMPosterModel.ModellingBusArtefactReporter.PrepareForPosting(modelID)
 
 	return CDMPosterModel
 }
 
 func (m *TCDMModel) ConnectoToBus(ModellingBusConnector mbconnect.TModellingBusConnector, modelID string) {
-	m.ModellingBusModelReporter.Initialise(ModellingBusConnector, ModelJSONVersion)
-	m.ModellingBusModelReporter.PrepareForPosting(modelID)
+	m.ModellingBusArtefactReporter.Initialise(ModellingBusConnector, ModelJSONVersion)
+	m.ModellingBusArtefactReporter.PrepareForPosting(modelID)
 }
 
 func (m *TCDMModel) PostState() {
-	m.ModellingBusModelReporter.PostState(json.Marshal(m))
+	m.ModellingBusArtefactReporter.PostState(json.Marshal(m))
 }
 
 func (m *TCDMModel) PostUpdate() {
-	m.ModellingBusModelReporter.PostUpdate(json.Marshal(m))
+	m.ModellingBusArtefactReporter.PostUpdate(json.Marshal(m))
 }
 
 func (m *TCDMModel) PostConsidering() {
-	m.ModellingBusModelReporter.PostConsidering(json.Marshal(m))
+	m.ModellingBusArtefactReporter.PostConsidering(json.Marshal(m))
 }
 
 /*
@@ -203,29 +203,29 @@ func (m *TCDMModel) PostConsidering() {
  *
  */
 
-func CreateCDMListener(ModellingBusConnector mbconnect.TModellingBusConnector) mbconnect.TModellingBusModelConnector {
+func CreateCDMListener(ModellingBusConnector mbconnect.TModellingBusConnector) mbconnect.TModellingBusArtefactConnector {
 	ModellingBusCDMModelListener := mbconnect.CreateModellingBusModelConnector(ModellingBusConnector, ModelJSONVersion)
 
 	return ModellingBusCDMModelListener
 }
 
-func (m *TCDMModel) GetStateFromBus(bus mbconnect.TModellingBusModelConnector) bool {
+func (m *TCDMModel) GetStateFromBus(bus mbconnect.TModellingBusArtefactConnector) bool {
 	m.Clean()
-	err := json.Unmarshal(bus.ModelCurrentContent, m)
+	err := json.Unmarshal(bus.ArtefactCurrentContent, m)
 
 	return err == nil
 }
 
-func (m *TCDMModel) GetUpdatedFromBus(bus mbconnect.TModellingBusModelConnector) bool {
+func (m *TCDMModel) GetUpdatedFromBus(bus mbconnect.TModellingBusArtefactConnector) bool {
 	m.Clean()
-	err := json.Unmarshal(bus.ModelUpdatedContent, m)
+	err := json.Unmarshal(bus.ArtefactUpdatedContent, m)
 
 	return err == nil
 }
 
-func (m *TCDMModel) GetConsideredFromBus(bus mbconnect.TModellingBusModelConnector) bool {
+func (m *TCDMModel) GetConsideredFromBus(bus mbconnect.TModellingBusArtefactConnector) bool {
 	m.Clean()
-	err := json.Unmarshal(bus.ModelConsideredContent, m)
+	err := json.Unmarshal(bus.ArtefactConsideredContent, m)
 
 	return err == nil
 }
