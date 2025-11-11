@@ -1,0 +1,39 @@
+#!/bin/bash
+
+function MkIni {
+  (
+    echo "experiment       = \"experiment-12.10.2025\""
+    echo "agent            = \"cdm-$3\""
+    echo "work             = \"/tmp\""
+    echo "latex            = \"test\""
+    echo ""
+    echo "[ftp]"
+    echo "user             = \"modelling_bus\""
+    echo "password         = \"Geheim1967\""
+    echo "port             = 21"
+    echo "server           = \"$2\""
+    echo "prefix           = \"modelling_bus\""
+    echo ""
+    echo "[mqtt]"
+    echo "user             = \"modelling_bus\""
+    echo "password         = \"Geheim1967\""
+    echo "port             = 1883"
+    echo "broker           = \"$2\""
+    echo "prefix           = \"modelling_bus\""
+    echo "max_message_size = 1024"
+  ) > $1.ini
+}
+
+MkIni mobile                    localhost               tester
+MkIni home                      frame.fritz.box         tester
+MkIni tuwien                    dm-lab.big.tuwien.ac.at tester
+
+MkIni ../model_listener/mobile  localhost               listener
+
+MkIni ../model_listener/home1   192.168.178.16          home-1
+MkIni ../model_listener/home2   192.168.178.16          home-2
+MkIni ../model_listener/home3   192.168.178.16          home-3
+
+MkIni ../model_listener/tuwien1 dm-lab.big.tuwien.ac.at tuwien-1
+MkIni ../model_listener/tuwien2 dm-lab.big.tuwien.ac.at tuwien-2
+MkIni ../model_listener/tuwien3 dm-lab.big.tuwien.ac.at tuwien-3

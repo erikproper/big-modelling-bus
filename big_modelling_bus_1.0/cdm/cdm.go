@@ -20,15 +20,9 @@ import (
 
 const (
 	ModelJSONVersion = "cdm-1.0-1.0"
-	MetaModelVersion = "cdm-1.0"
 )
 
 type (
-	TCDMJSONModel struct {
-		ModelName    string `json:"model name"`
-		ElementTypes map[string]string
-	}
-
 	TRelationReading struct {
 		InvolvementTypes []string `json:"involvement types"`
 		ReadingElements  []string `json:"reading elements"`
@@ -37,10 +31,8 @@ type (
 	TCDMModel struct {
 		ModelName                  string                                   `json:"model name"`
 		ModellingBusArtefactPoster mbconnect.TModellingBusArtefactConnector `json:"-"`
-		ModellingBusModelPoster mbconnect.TModellingBusArtefactConnector `json:"-"`
 		TypeIDCount                int                                      `json:"-"`
 		InstanceIDCount            int                                      `json:"-"`
-		ModellingBusModel          TCDMJSONModel                            `json:"-"`
 
 		// For types
 		TypeName map[string]string `json:"type names"`
@@ -186,9 +178,6 @@ func CreateCDMPoster(ModellingBusConnector mbconnect.TModellingBusConnector, mod
 
 func (m *TCDMModel) PostState() {
 	m.ModellingBusArtefactPoster.PostState(json.Marshal(m))
-
-//	m.ModellingBusModel = TCDMJSONModel{}
-//	m.ModellingBusModel.ModelName
 }
 
 func (m *TCDMModel) PostUpdate() {
