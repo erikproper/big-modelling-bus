@@ -52,10 +52,11 @@ type (
 		RelationTypeOfInvolvementType map[string]string `json:"relation types of involvement types"`
 
 		// For relation types
-		RelationTypes                  map[string]bool             `json:"relation types"`
-		InvolvementTypesOfRelationType map[string]map[string]bool  `json:"involvement types of relation types"`
-		ReadingsOfRelationType         map[string]map[string]bool  `json:"readings of relation types"`
-		ReadingDefinition              map[string]TRelationReading `json:"reading definition"`
+		RelationTypes                     map[string]bool             `json:"relation types"`
+		InvolvementTypesOfRelationType    map[string]map[string]bool  `json:"involvement types of relation types"`
+		AlternativeReadingsOfRelationType map[string]map[string]bool  `json:"alternative readings of relation types"`
+		PrimaryReadingOfRelationType      map[string]string           `json:"primary readings of relation types"`
+		ReadingDefinition                 map[string]TRelationReading `json:"reading definition"`
 	}
 )
 
@@ -72,7 +73,8 @@ func (m *TCDMModel) Clean() {
 	m.BaseTypeOfInvolvementType = map[string]string{}
 	m.RelationTypeOfInvolvementType = map[string]string{}
 	m.InvolvementTypesOfRelationType = map[string]map[string]bool{}
-	m.ReadingsOfRelationType = map[string]map[string]bool{}
+	m.AlternativeReadingsOfRelationType = map[string]map[string]bool{}
+	m.PrimaryReadingOfRelationType = map[string]string{}
 	m.ReadingDefinition = map[string]TRelationReading{}
 }
 
@@ -122,12 +124,12 @@ func (m *TCDMModel) AddRelationType(name string, involvementTypes ...string) str
 		m.InvolvementTypesOfRelationType[id][involvementType] = true
 	}
 
-	m.ReadingsOfRelationType[id] = map[string]bool{}
+	m.AlternativeReadingsOfRelationType[id] = map[string]bool{}
 
 	return id
 }
 
-func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolvementTypes ...string) {
+func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolvementTypes ...string) string {
 	reading := TRelationReading{}
 
 	isReadingString := true
@@ -141,9 +143,14 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
 	}
 
 	readingID := m.NewElementID()
-	m.ReadingsOfRelationType[relationType][readingID] = true
+	m.AlternativeReadingsOfRelationType[relationType][readingID] = true
 	m.ReadingDefinition[readingID] = reading
 
+	if m.PrimaryReadingOfRelationType[relationType] == "" {
+		m.PrimaryReadingOfRelationType[relationType] = readingID
+	}
+
+	return readingID
 	// Does require a check to see if all InvolvementTypesss of the relation have been used ... and used only once
 	// But ... as this is only "Hello World" for now, we won't do so yet.
 }

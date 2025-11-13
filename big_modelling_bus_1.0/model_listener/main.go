@@ -85,9 +85,9 @@ func (l *TCDMModelLaTeXWriter) InvolvementTypesOfRelationType(relationType strin
 	})
 }
 
-func (l *TCDMModelLaTeXWriter) ReadingsOfRelationType(relationType string) map[string]bool {
+func (l *TCDMModelLaTeXWriter) AlternativeReadingsOfRelationType(relationType string) map[string]bool {
 	return l.MergeIDSets(func(m cdm.TCDMModel) map[string]bool {
-		return m.ReadingsOfRelationType[relationType]
+		return m.AlternativeReadingsOfRelationType[relationType]
 	})
 }
 
@@ -154,18 +154,29 @@ func (l *TCDMModelLaTeXWriter) RenderTypeName(typeID string) string {
 	})
 }
 
+func (l *TCDMModelLaTeXWriter) RenderModelRelationTypeReading(m cdm.TCDMModel, reading string) string {
+	readingString := ""
+	for involvementPosition, involvementType := range m.ReadingDefinition[reading].InvolvementTypes {
+		if involvementPosition == 0 {
+			readingString += m.ReadingDefinition[reading].ReadingElements[involvementPosition]
+		}
+		readingString += " " + 
+			m.TypeName[m.BaseTypeOfInvolvementType[involvementType]] +
+			" $\\{$ " + m.TypeName[involvementType] + " $\\}$ " +
+			m.ReadingDefinition[reading].ReadingElements[involvementPosition+1]
+	}
+	return strings.TrimSpace(readingString)
+}
+
+func (l *TCDMModelLaTeXWriter) RenderPrimaryRelationTypeReading(relationTypeID string) string {
+	return l.RenderElement(func(m cdm.TCDMModel) string {
+		return l.RenderModelRelationTypeReading(m, m.PrimaryReadingOfRelationType[relationTypeID])
+	})
+}
+
 func (l *TCDMModelLaTeXWriter) RenderRelationTypeReading(reading string) string {
 	return l.RenderElement(func(m cdm.TCDMModel) string {
-		readingString := ""
-		for involvementPosition, involvementType := range m.ReadingDefinition[reading].InvolvementTypes {
-			if involvementPosition == 0 {
-				readingString += m.ReadingDefinition[reading].ReadingElements[involvementPosition]
-			}
-			readingString += " " +
-				m.TypeName[m.BaseTypeOfInvolvementType[involvementType]] + " ... " +
-				m.ReadingDefinition[reading].ReadingElements[involvementPosition+1]
-		}
-		return strings.TrimSpace(readingString)
+		return l.RenderModelRelationTypeReading(m, reading)
 	})
 }
 
@@ -231,12 +242,19 @@ func (l *TCDMModelLaTeXWriter) WriteModelToLaTeX() {
 			}
 		}
 		l.WriteLaTeX(" $\\}$}\n")
-		if len(l.ReadingsOfRelationType(relationType)) > 0 {
+		if primaryRelationTypeReading := l.RenderPrimaryRelationTypeReading(relationType); primaryRelationTypeReading != "" {
 			l.WriteLaTeX("\n")
-			l.WriteLaTeX("          Reading(s):\n")
+			l.WriteLaTeX("          Primary reading:\n")
+			l.WriteLaTeX("          \\begin{itemize}\n")
+			l.WriteLaTeX("              \\item {\\sf %s}\n", primaryRelationTypeReading)
+			l.WriteLaTeX("          \\end{itemize}\n")
+		}
+		if len(l.AlternativeReadingsOfRelationType(relationType)) > 0 {
+			l.WriteLaTeX("\n")
+			l.WriteLaTeX("          Alternative reading(s):\n")
 			l.WriteLaTeX("          \\begin{itemize}\n")
 			readingPosition := 0
-			for reading := range l.ReadingsOfRelationType(relationType) {
+			for reading := range l.AlternativeReadingsOfRelationType(relationType) {
 				if readingPosition > 0 {
 					l.WriteLaTeX("\n")
 				}
@@ -282,7 +300,7 @@ func CreateCDMLaTeXWriter(config string, reporter *mbconnect.TReporter) TCDMMode
 	return CDMModelLaTeXWriter
 }
 
-func (l *TCDMModelLaTeXWriter) ListenForModellingBus(ModellingBusModelListener mbconnect.TModellingBusArtefactConnector, agentId, modelID string) {
+func (l *TCDMModelLaTeXWriter) ListenForModelPostings(ModellingBusModelListener mbconnect.TModellingBusArtefactConnector, agentId, modelID string) {
 	ModellingBusModelListener.ListenForStatePostings(agentId, modelID, func() {
 		l.reporter.Progress("Received state.")
 		l.CurrentModel.GetStateFromBus(ModellingBusModelListener)
@@ -330,7 +348,7 @@ func main() {
 	ModellingBusModelListener := cdm.CreateCDMListener(ModellingBusConnector)
 
 	CDMLaTeXWriter := CreateCDMLaTeXWriter(config, reporter)
-	CDMLaTeXWriter.ListenForModellingBus(ModellingBusModelListener, "cdm-tester", "0001")
+	CDMLaTeXWriter.ListenForModelPostings(ModellingBusModelListener, "cdm-tester", "0001")
 
 	for true {
 		time.Sleep(1)

@@ -1,3 +1,5 @@
+[ ] CDM layaer cleaning
+
 [ ] ModellingBusConnector.DeleteRawArtefact("context", "golang", "main.go")
 ==> Delete files ....
 ==> Events and files
@@ -32,6 +34,7 @@ func (b *TModellingBusConnector) cleanFTPPath(topicPath string) {
 	}
 }
 
+[ ] Clean listener
 
 [ ] Principles
 - Separation of concerns across layers
@@ -44,6 +47,8 @@ func (b *TModellingBusConnector) cleanFTPPath(topicPath string) {
     - TEventBus (MQTT)
     
 [ ] CDM should have its own ID generator. Separation of concerns!
+
+[ ] https://mermaid.live/
 
 [ ] Keep alive at MQTT level. Laptop seems to drop the connection. 
     => https://stackoverflow.com/questions/43759445/how-i-can-check-if-i-lose-connection-with-mqtt-broker 
