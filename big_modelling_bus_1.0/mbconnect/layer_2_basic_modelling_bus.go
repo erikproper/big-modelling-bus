@@ -58,7 +58,7 @@ func (b *TModellingBusConnector) deleteFile(topicPath, fileName, fileExtension s
 }
 
 func (b *TModellingBusConnector) deleteExperiment() {
-HERE
+//HERE
 //	b.modellingBusEventsConnector.deleteEvent(topicPath)
 //	b.modellingBusRepositoryConnector.deleteFile(topicPath, fileName, fileExtension)
 }
