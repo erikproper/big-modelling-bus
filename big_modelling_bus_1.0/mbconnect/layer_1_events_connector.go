@@ -93,6 +93,17 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 		token.Wait()
 
 		e.WaitForMQTT()
+
+		if len(e.messages) == 0 {
+			e.reporter.Progress("No topics found.")
+		} else {
+			e.reporter.Progress("Found topic(s):")
+			for topic := range e.messages {
+				if strings.HasPrefix(topic, e.topicRoot) {
+					e.reporter.Progress("- %s", topic)
+				}
+			}
+		}
 	}
 }
 

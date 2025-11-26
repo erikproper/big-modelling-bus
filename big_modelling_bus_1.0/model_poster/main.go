@@ -3,8 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"modelling_bus_1.0/mblanguages/cdm"
 	"modelling_bus_1.0/mbconnect"
+	"modelling_bus_1.0/mblanguages/cdm"
 	"os"
 )
 
@@ -41,10 +41,10 @@ func main() {
 	ModellingBusConnector := mbconnect.CreateModellingBusConnector(configData, reporter)
 	ModellingBusConnector.DeleteExperiment()
 
-//		ModellingBusConnector.PostRawArtefact("context", "golang", "test", "main.go")
-//		fmt.Println(ModellingBusConnector.GetRawArtefact("cdm-tester", "context", "golang", "test", "local.go"))
-//		fmt.Println(ModellingBusConnector.GetRawArtefact("cdm-tester", "context", "golang", "test", "local.go"))
-//		ModellingBusConnector.DeleteRawArtefact("context", "golang", "test.go")
+	//		ModellingBusConnector.PostRawArtefact("context", "golang", "test", "main.go")
+	//		fmt.Println(ModellingBusConnector.GetRawArtefact("cdm-tester", "context", "golang", "test", "local.go"))
+	//		fmt.Println(ModellingBusConnector.GetRawArtefact("cdm-tester", "context", "golang", "test", "local.go"))
+	//		ModellingBusConnector.DeleteRawArtefact("context", "golang", "test.go")
 
 	// Note that the 0001 is for local use. No issue to e.g. make this into 0001/02 to indicate version numbers
 	CDMModellingBusPoster := cdm.CreateCDMPoster(ModellingBusConnector, "0001")

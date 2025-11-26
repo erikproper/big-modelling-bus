@@ -202,7 +202,7 @@ func createModellingBusRepositoryConnector(experimentID, agentID string, configD
 	r.reporter = reporter
 
 	// Get data from the config file
-	r.localWorkDirectory = configData.GetValue("", "work").String()
+	r.localWorkDirectory = configData.GetValue("", "work_folder").String()
 	r.port = configData.GetValue("ftp", "port").String()
 	r.user = configData.GetValue("ftp", "user").String()
 	r.server = configData.GetValue("ftp", "server").String()

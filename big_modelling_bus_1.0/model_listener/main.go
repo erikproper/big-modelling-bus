@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"gopkg.in/ini.v1"
-	"modelling_bus_1.0/mblanguages/cdm"
 	"modelling_bus_1.0/mbconnect"
+	"modelling_bus_1.0/mblanguages/cdm"
 	"os"
 	"os/exec"
 	"strings"
