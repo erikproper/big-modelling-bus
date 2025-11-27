@@ -4,7 +4,9 @@
  * Layer:   generic
  * Module:  config_reader
  *
- * ..... ... .. .
+ * This module reads ini files.
+ * It gladly uses the functionality provided by "gopkg.in/ini.v1".
+ * Nevertheless, having our own configuration loader makes the rest of the mbconnect code less dependent on potential changes
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
