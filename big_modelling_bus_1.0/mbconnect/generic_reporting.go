@@ -19,6 +19,12 @@ import (
 	"fmt"
 )
 
+const (
+	ProgressLevelBasic    = 1
+	ProgressLevelDetailed = 2
+	ProgressLevelNoisy    = 3
+)
+
 type (
 	TErrorReporter    func(string)
 	TProgressReporter func(string)
@@ -35,6 +41,7 @@ func (r *TReporter) Error(message string, context ...any) {
 
 func (r *TReporter) Panic(message string, context ...any) {
 	r.Error(message+" Panicking.", context...)
+
 	panic("")
 }
 

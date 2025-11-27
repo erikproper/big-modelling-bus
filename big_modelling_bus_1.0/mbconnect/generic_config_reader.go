@@ -44,7 +44,7 @@ func LoadConfig(filePath string, reporter *TReporter) *TConfigData {
 		configData TConfigData
 	)
 
-	reporter.Progress(1, "Reading config file: %s", filePath)
+	reporter.Progress(ProgressLevelDetailed, "Reading config file: %s", filePath)
 	configData.configFile, err = ini.Load(filePath)
 
 	if err != nil {

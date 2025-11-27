@@ -74,7 +74,7 @@ func (e *tModellingBusEventsConnector) connectionLostHandler(c mqtt.Client, err 
 }
 
 func (e *tModellingBusEventsConnector) waitForMQTT() {
-	e.reporter.Progress(2, "Sleeping for %d miliseconds to collect information from the MQTT bus.", e.loadDelay)
+	e.reporter.Progress(ProgressLevelDetailed, "Sleeping for %d miliseconds to collect information from the MQTT bus.", e.loadDelay)
 	time.Sleep(time.Duration(e.loadDelay) * time.Second / 1000)
 }
 
@@ -93,12 +93,12 @@ func (e *tModellingBusEventsConnector) collectTopicsForEnvironment(environmentID
 	e.waitForMQTT()
 
 	if len(e.messages) == 0 {
-		e.reporter.Progress(2, "No topics found.")
+		e.reporter.Progress(ProgressLevelDetailed, "No topics found.")
 	} else {
-		e.reporter.Progress(2, "Found topic(s):")
+		e.reporter.Progress(ProgressLevelDetailed, "Found topic(s):")
 		for topic := range e.messages {
 			if strings.HasPrefix(topic, e.mqttEnvironmentTopicRoot()) {
-				e.reporter.Progress(2, "- %s", topic)
+				e.reporter.Progress(ProgressLevelDetailed, "- %s", topic)
 			}
 		}
 	}
@@ -113,7 +113,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 
 	connected := false
 	for !connected {
-		e.reporter.Progress(1, "Trying to connect to the MQTT broker.")
+		e.reporter.Progress(ProgressLevelBasic, "Trying to connect to the MQTT broker.")
 
 		e.client = mqtt.NewClient(opts)
 		token := e.client.Connect()
@@ -131,7 +131,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 
 	e.messages = map[string][]byte{}
 	if connected {
-		e.reporter.Progress(1, "Connected to the MQTT broker.")
+		e.reporter.Progress(ProgressLevelBasic, "Connected to the MQTT broker.")
 
 		// Continuously connect all used topics underneath the topic root, and their messages
 		// We need this to enable deletion of topics, as well as to be able to pro-actively

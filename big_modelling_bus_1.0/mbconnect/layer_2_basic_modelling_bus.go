@@ -127,7 +127,7 @@ func (b *TModellingBusConnector) DeleteEnvironment(environment ...string) {
 		environmentToDelete = environment[0]
 	}
 
-	b.reporter.Progress(1, "Deleting environment: %s", environmentToDelete)
+	b.reporter.Progress(ProgressLevelBasic, "Deleting environment: %s", environmentToDelete)
 
 	b.modellingBusEventsConnector.deleteEnvironment(environmentToDelete)
 	b.modellingBusRepositoryConnector.deleteEnvironment(environmentToDelete)

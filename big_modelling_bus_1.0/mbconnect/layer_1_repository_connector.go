@@ -241,15 +241,15 @@ func createModellingBusRepositoryConnector(environmentID, agentID string, config
 	r.createdPaths = map[string]bool{}
 
 	if r.singleServerMode {
-		r.reporter.Progress(2, "Running the FTP connection in single server mode.")
+		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in single server mode.")
 	} else {
-		r.reporter.Progress(2, "Running the FTP connection in multi server mode.")
+		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in multi server mode.")
 	}
 
 	if r.activeTransfers {
-		r.reporter.Progress(2, "Running the FTP connection in active transfer mode.")
+		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in active transfer mode.")
 	} else {
-		r.reporter.Progress(2, "Running the FTP connection in passive transfer mode.")
+		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in passive transfer mode.")
 	}
 
 	return &r
