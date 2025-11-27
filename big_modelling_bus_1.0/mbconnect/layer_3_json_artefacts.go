@@ -193,11 +193,6 @@ func (b *TModellingBusArtefactConnector) PostState(stateJSON []byte, err error) 
 	b.UpdatedContent = stateJSON
 	b.ConsideredContent = stateJSON
 
-	if err != nil {
-		b.ModellingBusConnector.reporter.Error("Something went wrong JSONing the artefact. %s", err)
-		return
-	}
-
 	b.ModellingBusConnector.postJSON(b.artefactsStateTopicPath(b.ArtefactID), b.JSONVersion, b.CurrentContent, b.CurrentTimestamp)
 
 	b.stateCommunicated = true
@@ -210,7 +205,6 @@ func (b *TModellingBusArtefactConnector) PostState(stateJSON []byte, err error) 
 func (b *TModellingBusArtefactConnector) ListenForStatePostings(agentID, artefactID string, handler func()) {
 	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsStateTopicPath(artefactID), func(json []byte, currentTimestamp string) {
 		b.updateCurrent(json, currentTimestamp)
-		//		b.ModellingBusConnector.reporter.Progress("TT %s", currentTimestamp)
 		handler()
 	})
 }

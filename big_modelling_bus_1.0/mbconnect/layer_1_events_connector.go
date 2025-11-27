@@ -165,7 +165,7 @@ func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath strin
 		message = e.messages[mqttTopicPath]
 	}
 
-	return e.messages[mqttTopicPath]
+	return message
 }
 
 func (e *tModellingBusEventsConnector) postMessage(topicPath string, message []byte) {
