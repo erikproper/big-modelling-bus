@@ -1,10 +1,10 @@
-[ ] Deleting of Environment for Agent
-
-==> Commandline versions
-
 [ ] CDM listener and poster as cdm rest repos
 
-[ ] Clean listener code
+[ ] Commandline versions for "cleanup" 
+
+[ ] Commandline versions for post/get/listen
+
+[ ] Clean cdm_listener code
 
 [ ] Clean and document code
 

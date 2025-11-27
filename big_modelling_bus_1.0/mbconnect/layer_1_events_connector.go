@@ -15,9 +15,10 @@
 package mbconnect
 
 import (
-	"github.com/eclipse/paho.mqtt.golang"
 	"strings"
 	"time"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type (
