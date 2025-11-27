@@ -3,13 +3,13 @@
  * Package: mbconnect
  * Layer:   generic
  * Module:  reporting
- * *
+ *
  * This module is concerned with the reporting of errors, progress, etc, to the user.
  * For the moment, it only involves the reporting of progress and errors.
  *
- * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
+ * Author: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.11.2025
+ * Version of: 27.11.2025
  *
  */
 
@@ -38,7 +38,7 @@ func (r *TReporter) Panic(message string, context ...any) {
 	panic("")
 }
 
-func (r *TReporter) Progress(message string, context ...any) {
+func (r *TReporter) Progress(level int, message string, context ...any) {
 	r.progressReporter(fmt.Sprintf(message, context...))
 }
 

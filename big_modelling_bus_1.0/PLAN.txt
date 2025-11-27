@@ -1,5 +1,7 @@
 [ ] CDM listener and poster as cdm rest repos
 
+[ ] Reporting levels as flag
+
 [ ] Commandline versions for "cleanup" 
 
 [ ] Commandline versions for post/get/listen

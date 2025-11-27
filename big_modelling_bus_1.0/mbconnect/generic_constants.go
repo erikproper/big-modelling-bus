@@ -8,7 +8,7 @@
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: 27.11.2025
+ * Author: 27.11.2025
  *
  */
 
