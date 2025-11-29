@@ -1,4 +1,4 @@
-module modelling_bus_1.0
+github.com/erikproper/big-modelling-bus.go.v1
 
 go 1.24.0
 
