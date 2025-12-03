@@ -1,18 +1,3 @@
-[ ] After opening (and waiting), do keep adding messages to the bus state.
-    But, stop writing to the original_state
-    That way we can detect if message is new.
-    Or rather ....
-    - General /# handler:
-      - At opening:
-        OpeningState[t] = message
-        CurrentState[t] = message
-      - After opening:
-        OpeningState[t] = ''
-        CurrentState[t] = message
-    - Topic specific handler:
-      - if OpeningState[t] != message then:
-           handle(message)
-
 [ ] Reporting levels as flag + flags module
 
 [ ] Command lines:

@@ -150,8 +150,6 @@ func (e *tModellingBusEventsConnector) listenForEvents(agentID, topicPath string
 	token := e.client.Subscribe(mqttTopicPath, 0, func(client mqtt.Client, msg mqtt.Message) {
 		payload := msg.Payload()
 
-		e.reporter.Progress(1, "At opening %s", string(e.openingMessages[mqttTopicPath]))
-		e.reporter.Progress(1, "Current %s", string(payload))
 		if len(payload) > 0 && string(e.openingMessages[mqttTopicPath]) != string(payload) {
 			eventHandler(payload)
 		}
