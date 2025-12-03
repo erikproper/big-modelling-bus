@@ -19,8 +19,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/secsy/goftp"
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
+	"github.com/secsy/goftp"
 )
 
 type (

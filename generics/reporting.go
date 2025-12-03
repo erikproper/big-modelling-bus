@@ -30,6 +30,7 @@ type (
 	TProgressReporter func(string)
 
 	TReporter struct {
+		reportingLevel   int
 		errorReporter    TErrorReporter
 		progressReporter TProgressReporter
 	}
@@ -46,14 +47,17 @@ func (r *TReporter) Panic(message string, context ...any) {
 }
 
 func (r *TReporter) Progress(level int, message string, context ...any) {
-	r.progressReporter(fmt.Sprintf(message, context...))
+	if level <= r.reportingLevel {
+		r.progressReporter(fmt.Sprintf(message, context...))
+	}
 }
 
-func CreateReporter(errorReporter TErrorReporter, progressReporter TProgressReporter) *TReporter {
+func CreateReporter(level int, errorReporter TErrorReporter, progressReporter TProgressReporter) *TReporter {
 	reporter := TReporter{}
 
 	reporter.errorReporter = errorReporter
 	reporter.progressReporter = progressReporter
+	reporter.reportingLevel = level
 
 	return &reporter
 }
