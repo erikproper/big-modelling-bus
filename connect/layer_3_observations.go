@@ -97,6 +97,10 @@ func (b *TModellingBusConnector) GetJSONObservation(agentID, observationID strin
 	return b.getJSON(agentID, b.jsonObservationsTopicPath(observationID))
 }
 
+func (b *TModellingBusConnector) GetStreamedObservation(agentID, observationID string) ([]byte, string) {
+	return b.getStreamed(agentID, b.streamedObservationsTopicPath(observationID))
+}
+
 /*
  * Deleting observations
  */
