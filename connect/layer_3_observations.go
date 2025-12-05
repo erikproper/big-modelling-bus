@@ -75,9 +75,8 @@ func (b *TModellingBusConnector) ListenForJSONObservationPostings(agentID, obser
  * Retrieving observations
  */
 
-func (b *TModellingBusConnector) GetRawObservation(agentID, observationID, localFileName string) string {
-	localFilePath, _ := b.getFileFromPosting(agentID, b.rawObservationsTopicPath(observationID), localFileName)
-	return localFilePath
+func (b *TModellingBusConnector) GetRawObservation(agentID, observationID, localFileName string) (string, string) {
+	return b.getFileFromPosting(agentID, b.rawObservationsTopicPath(observationID), localFileName)
 }
 
 func (b *TModellingBusConnector) GetJSONObservation(agentID, observationID string) ([]byte, string) {
