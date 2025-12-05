@@ -105,7 +105,7 @@ func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(envi
 	}
 }
 
-func (e *tModellingBusEventsConnector) connectToMQTT() {
+func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("tcp://" + e.broker + ":" + e.port)
 	opts.SetUsername(e.user)
@@ -137,7 +137,9 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 		// Continuously connect all used topics underneath the topic root, and their messages
 		// We need this to enable deletion of topics, as well as to be able to pro-actively
 		// pull information from the modelling bus
-		e.collectTopicsForModellingEnvironment(e.environmentID)
+		if !postingOnly {
+			e.collectTopicsForModellingEnvironment(e.environmentID)
+		}
 
 		e.connectionBeingOpenened = false
 	}
@@ -199,7 +201,7 @@ func (e *tModellingBusEventsConnector) deleteEnvironment(environmentID string) {
 	}
 }
 
-func createModellingBusEventsConnector(environmentID, agentID string, configData *generics.TConfigData, reporter *generics.TReporter) *tModellingBusEventsConnector {
+func createModellingBusEventsConnector(environmentID, agentID string, configData *generics.TConfigData, reporter *generics.TReporter, postingOnly bool) *tModellingBusEventsConnector {
 	e := tModellingBusEventsConnector{}
 
 	// Get data from the config file
@@ -217,7 +219,7 @@ func createModellingBusEventsConnector(environmentID, agentID string, configData
 	e.environmentID = environmentID
 	e.reporter = reporter
 
-	e.connectToMQTT()
+	e.connectToMQTT(postingOnly)
 
 	return &e
 }

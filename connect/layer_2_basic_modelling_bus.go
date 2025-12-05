@@ -135,7 +135,7 @@ func (b *TModellingBusConnector) DeleteEnvironment(environment ...string) {
 	b.modellingBusRepositoryConnector.deleteEnvironment(environmentToDelete)
 }
 
-func CreateModellingBusConnector(configData *generics.TConfigData, reporter *generics.TReporter) TModellingBusConnector {
+func CreateModellingBusConnector(configData *generics.TConfigData, reporter *generics.TReporter, postingOnly bool) TModellingBusConnector {
 	modellingBusConnector := TModellingBusConnector{}
 	modellingBusConnector.environmentID = configData.GetValue("", "environment").String()
 	modellingBusConnector.agentID = configData.GetValue("", "agent").String()
@@ -154,7 +154,8 @@ func CreateModellingBusConnector(configData *generics.TConfigData, reporter *gen
 			modellingBusConnector.environmentID,
 			modellingBusConnector.agentID,
 			modellingBusConnector.configData,
-			modellingBusConnector.Reporter)
+			modellingBusConnector.Reporter,
+			postingOnly)
 
 	return modellingBusConnector
 }
