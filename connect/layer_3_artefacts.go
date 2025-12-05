@@ -183,35 +183,7 @@ func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFi
 	b.ModellingBusConnector.postFile(b.rawArtefactsTopicPath(b.ArtefactID), localFilePath)
 }
 
-func (b *TModellingBusArtefactConnector) PostConsideringJSONArtefact(consideringStateJSON []byte, err error) {
-	if b.foundJSONIssue(err) {
-		return
-	}
-	if !b.stateCommunicated {
-		b.PostStateJSONArtefact(b.CurrentContent, err)
-	}
-
-	b.ConsideredContent = consideringStateJSON
-
-	b.postJSONDelta(b.jsonArtefactsConsideringTopicPath(b.ArtefactID), b.UpdatedContent, b.ConsideredContent, err)
-}
-
-func (b *TModellingBusArtefactConnector) PostUpdateJSONArtefact(updatedStateJSON []byte, err error) {
-	if b.foundJSONIssue(err) {
-		return
-	}
-
-	if !b.stateCommunicated {
-		b.PostStateJSONArtefact(updatedStateJSON, err)
-	}
-
-	b.UpdatedContent = updatedStateJSON
-	b.ConsideredContent = updatedStateJSON
-
-	b.postJSONDelta(b.jsonArtefactsUpdateTopicPath(b.ArtefactID), b.CurrentContent, b.UpdatedContent, err)
-}
-
-func (b *TModellingBusArtefactConnector) PostStateJSONArtefact(stateJSON []byte, err error) {
+func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte, err error) {
 	if b.foundJSONIssue(err) {
 		return
 	}
@@ -224,6 +196,34 @@ func (b *TModellingBusArtefactConnector) PostStateJSONArtefact(stateJSON []byte,
 	b.ModellingBusConnector.postJSON(b.jsonArtefactsStateTopicPath(b.ArtefactID), b.CurrentContent, b.CurrentTimestamp)
 
 	b.stateCommunicated = true
+}
+
+func (b *TModellingBusArtefactConnector) PostUpdateJSONArtefact(updatedStateJSON []byte, err error) {
+	if b.foundJSONIssue(err) {
+		return
+	}
+
+	if !b.stateCommunicated {
+		b.PostJSONArtefactState(updatedStateJSON, err)
+	}
+
+	b.UpdatedContent = updatedStateJSON
+	b.ConsideredContent = updatedStateJSON
+
+	b.postJSONDelta(b.jsonArtefactsUpdateTopicPath(b.ArtefactID), b.CurrentContent, b.UpdatedContent, err)
+}
+
+func (b *TModellingBusArtefactConnector) PostConsideringJSONArtefact(consideringStateJSON []byte, err error) {
+	if b.foundJSONIssue(err) {
+		return
+	}
+	if !b.stateCommunicated {
+		b.PostJSONArtefactState(b.CurrentContent, err)
+	}
+
+	b.ConsideredContent = consideringStateJSON
+
+	b.postJSONDelta(b.jsonArtefactsConsideringTopicPath(b.ArtefactID), b.UpdatedContent, b.ConsideredContent, err)
 }
 
 /*
