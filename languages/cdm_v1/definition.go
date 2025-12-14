@@ -345,8 +345,7 @@ func (p *tCDMModelPoster) PostConsidering(m tCDMModel) {
 func NNCreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) tCDMModelPoster {
 	// Setting up new CDM model poster
 	CDMPosterModel := tCDMModelPoster{}
-	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
-	CDMPosterModel.modelPoster.PrepareForPosting(modelID)
+	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, modelID)
 
 	// Return the created CDM model poster
 	return CDMPosterModel
