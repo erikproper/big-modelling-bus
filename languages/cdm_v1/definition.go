@@ -33,18 +33,18 @@ const (
  */
 
 type (
-	TRelationReading struct {
+	tRelationReading struct {
 		InvolvementTypes []string `json:"involvement types"` // The involvement types used in the relation type readings
 		ReadingElements  []string `json:"reading elements"`  // The strings used in relation type reading
 	}
 
-	TCDMModel struct {
+	tCDMModel struct {
 		// For reporting errors
 		reporter *generics.TReporter // The Reporter to be used to report progress, errors, and panics
 
 		// For posting of, and listening to, model updates on the modelling bus
-		modelPoster   connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to post updates of the model
-		modelListener connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to listen for updates of the model
+		ModelPoster   connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to post updates of the model
+		ModelListener connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to listen for updates of the model
 
 		// General properties for the model
 		ModelName       string `json:"model name"` // The name of the model
@@ -70,7 +70,13 @@ type (
 		InvolvementTypesOfRelationType    map[string]map[string]bool  `json:"involvement types of relation types"`    // The involvement types of each relation type
 		AlternativeReadingsOfRelationType map[string]map[string]bool  `json:"alternative readings of relation types"` // The alternative readings of each relation type
 		PrimaryReadingOfRelationType      map[string]string           `json:"primary readings of relation types"`     // The primary reading of each relation type
-		ReadingDefinition                 map[string]TRelationReading `json:"reading definition"`                     // The definition of each relation type reading
+		ReadingDefinition                 map[string]tRelationReading `json:"reading definition"`                     // The definition of each relation type reading
+	}
+
+	tCDMModelPoster struct {
+		// ....
+		reporter    *generics.TReporter                    // The Reporter to be used to report progress, errors, and panics
+		modelPoster connect.TModellingBusArtefactConnector // ???
 	}
 )
 
@@ -81,7 +87,7 @@ type (
  */
 
 // Cleaning the model
-func (m *TCDMModel) Clean() {
+func (m *tCDMModel) Clean() {
 	// Resetting all fields
 	m.ModelName = ""
 	m.ConcreteIndividualTypes = map[string]bool{}
@@ -95,23 +101,23 @@ func (m *TCDMModel) Clean() {
 	m.InvolvementTypesOfRelationType = map[string]map[string]bool{}
 	m.AlternativeReadingsOfRelationType = map[string]map[string]bool{}
 	m.PrimaryReadingOfRelationType = map[string]string{}
-	m.ReadingDefinition = map[string]TRelationReading{}
+	m.ReadingDefinition = map[string]tRelationReading{}
 }
 
 // Generating a new element ID
-func (m *TCDMModel) NewElementID() string {
+func (m *tCDMModel) NewElementID() string {
 	// Generating a new element ID based on timestamps
 	return generics.GetTimestamp()
 }
 
 // Setting the model name
-func (m *TCDMModel) SetModelName(name string) {
+func (m *tCDMModel) SetModelName(name string) {
 	// Setting the model name
 	m.ModelName = name
 }
 
 // Adding a concrete individual type
-func (m *TCDMModel) AddConcreteIndividualType(name string) string {
+func (m *tCDMModel) AddConcreteIndividualType(name string) string {
 	// Settings things up for a new concrete individual type
 	id := m.NewElementID()
 	m.ConcreteIndividualTypes[id] = true
@@ -122,7 +128,7 @@ func (m *TCDMModel) AddConcreteIndividualType(name string) string {
 }
 
 // Adding a quality type
-func (m *TCDMModel) AddQualityType(name, domain string) string {
+func (m *tCDMModel) AddQualityType(name, domain string) string {
 	// Settings things up for a new quality type
 	id := m.NewElementID()
 	m.QualityTypes[id] = true
@@ -134,7 +140,7 @@ func (m *TCDMModel) AddQualityType(name, domain string) string {
 }
 
 // Adding an involvement type
-func (m *TCDMModel) AddInvolvementType(name string, base string) string {
+func (m *tCDMModel) AddInvolvementType(name string, base string) string {
 	// Settings things up for a new involvement type
 	id := m.NewElementID()
 	m.InvolvementTypes[id] = true
@@ -146,7 +152,7 @@ func (m *TCDMModel) AddInvolvementType(name string, base string) string {
 }
 
 // Adding a relation type
-func (m *TCDMModel) AddRelationType(name string, involvementTypes ...string) string {
+func (m *tCDMModel) AddRelationType(name string, involvementTypes ...string) string {
 	// Settings things up for a new relation type
 	id := m.NewElementID()
 	m.RelationTypes[id] = true
@@ -167,9 +173,9 @@ func (m *TCDMModel) AddRelationType(name string, involvementTypes ...string) str
 }
 
 // Adding a relation type reading
-func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolvementTypes ...string) string {
+func (m *tCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolvementTypes ...string) string {
 	// Creating the relation type reading
-	reading := TRelationReading{}
+	reading := tRelationReading{}
 
 	// Splitting the strings and involvement types
 	// These should be given in an alternating manner
@@ -215,9 +221,9 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
  */
 
 // Creating a new CDM model
-func CreateCDMModel(reporter *generics.TReporter) TCDMModel {
+func CreateCDMModel(reporter *generics.TReporter) tCDMModel {
 	// Creating the model
-	CDMModel := TCDMModel{}
+	CDMModel := tCDMModel{}
 	CDMModel.Clean()
 
 	// Setting up the reporter
@@ -234,31 +240,31 @@ func CreateCDMModel(reporter *generics.TReporter) TCDMModel {
  */
 
 // Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
-func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter *generics.TReporter) TCDMModel {
+func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter *generics.TReporter) tCDMModel {
 	// Creating the CDM model poster
 	CDMPosterModel := CreateCDMModel(reporter)
 
-	// Setting up the modelPoster
-	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
-	CDMPosterModel.modelPoster.PrepareForPosting(modelID)
+	// Setting up the ModelPoster
+	CDMPosterModel.ModelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMPosterModel.ModelPoster.PrepareForPosting(modelID)
 
 	// Return the created model poster
 	return CDMPosterModel
 }
 
 // Posting the model's state
-func (m *TCDMModel) PostState() {
-	m.modelPoster.PostJSONArtefactState(json.Marshal(m))
+func (m *tCDMModel) PostState() {
+	m.ModelPoster.PostJSONArtefactState(json.Marshal(m))
 }
 
 // Posting the model's update
-func (m *TCDMModel) PostUpdate() {
-	m.modelPoster.PostJSONArtefactUpdate(json.Marshal(m))
+func (m *tCDMModel) PostUpdate() {
+	m.ModelPoster.PostJSONArtefactUpdate(json.Marshal(m))
 }
 
 // Posting the model's considered update
-func (m *TCDMModel) PostConsidering() {
-	m.modelPoster.PostJSONArtefactConsidering(json.Marshal(m))
+func (m *tCDMModel) PostConsidering() {
+	m.ModelPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }
 
 /*
@@ -268,50 +274,69 @@ func (m *TCDMModel) PostConsidering() {
  */
 
 // Creating a CDM model listener, which uses a given ModellingBusConnector to listen for models and their updates
-func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModel {
+func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) tCDMModel {
 	// Creating the CDM listener model
 	CDMListenerModel := CreateCDMModel(reporter)
 
 	// Connecting it to the bus
-	CDMListenerModel.modelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMListenerModel.ModelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 
 	// Return the created listener model
 	return CDMListenerModel
 }
 
 // Updating the model's state from given JSON
-func (m *TCDMModel) UpdateModelFromJSON(modelJSON json.RawMessage) bool {
+func (m *tCDMModel) UpdateModelFromJSON(modelJSON json.RawMessage) bool {
 	m.Clean()
 
 	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
 }
 
 // Listening for model state postings on the modelling bus
-func (m *TCDMModel) ListenForModelStatePostings(agentId, modelID string, handler func()) {
-	l.modelListener.ListenForJSONArtefactStatePostings(agentId, modelID, handler)
+func (m *tCDMModel) ListenForModelStatePostings(agentId, modelID string, handler func()) {
+	m.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, handler)
 }
 
 // Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelStatePostings(agentId, modelID string, handler func()) {
-	l.modelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, handler)
+func (m *tCDMModel) ListenForModelUpdatePostings(agentId, modelID string, handler func()) {
+	m.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, handler)
 }
 
 // Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelConsideringPostings(agentId, modelID string, handler func()) {
-	l.modelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, handler)
+func (m *tCDMModel) ListenForModelConsideringPostings(agentId, modelID string, handler func()) {
+	m.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, handler)
 }
 
 // Retrieving the model's state from the modelling bus
-func (m *TCDMModel) GetStateFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
+func (m *tCDMModel) GetStateFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
 	return m.UpdateModelFromJSON(artefactBus.CurrentContent)
 }
 
 // Retrieving the model's updated state from the modelling bus
-func (m *TCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
+func (m *tCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
 	return m.UpdateModelFromJSON(artefactBus.UpdatedContent)
 }
 
 // Retrieving the model's considered state from the modelling bus
-func (m *TCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
+func (m *tCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
 	return m.UpdateModelFromJSON(artefactBus.ConsideredContent)
+}
+
+////
+////
+////
+
+// Posting the model's state
+func (p *tCDMModelPoster) PostState(m tCDMModel) {
+	p.modelPoster.PostJSONArtefactState(json.Marshal(m))
+}
+
+// Posting the model's update
+func (p *tCDMModelPoster) PostUpdate(m tCDMModel) {
+	p.modelPoster.PostJSONArtefactUpdate(json.Marshal(m))
+}
+
+// Posting the model's considered update
+func (p *tCDMModelPoster) PostConsidering(m tCDMModel) {
+	p.modelPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }

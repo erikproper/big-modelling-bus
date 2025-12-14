@@ -63,10 +63,10 @@ func (r *TReporter) MaybeReportError(message string, err error) bool {
 	if err != nil {
 		r.Error(message, err)
 
-		return false
+		return true
 	}
 
-	return true
+	return false
 }
 
 // Panicking with an error message

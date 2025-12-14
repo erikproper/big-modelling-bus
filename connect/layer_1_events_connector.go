@@ -50,7 +50,7 @@ type (
 
 		client mqtt.Client // The MQTT client
 
-		reporter *generics.TReporter // The Reporter to be used to report progress, error, and panics
+		reporter *generics.TReporter // The Reporter to be used to report progress, errors, and panics
 	}
 )
 
