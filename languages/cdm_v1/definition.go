@@ -75,7 +75,7 @@ type (
 
 	tCDMModelPoster struct {
 		// ....
-		reporter    *generics.TReporter                    // The Reporter to be used to report progress, errors, and panics
+		//		reporter    *generics.TReporter                    // The Reporter to be used to report progress, errors, and panics
 		modelPoster connect.TModellingBusArtefactConnector // ???
 	}
 )
@@ -240,7 +240,7 @@ func CreateCDMModel(reporter *generics.TReporter) tCDMModel {
  */
 
 // Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
-func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter *generics.TReporter) tCDMModel {
+func OOCreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter *generics.TReporter) tCDMModel {
 	// Creating the CDM model poster
 	CDMPosterModel := CreateCDMModel(reporter)
 
@@ -342,7 +342,7 @@ func (p *tCDMModelPoster) PostConsidering(m tCDMModel) {
 }
 
 // Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
-func NNCreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) tCDMModelPoster {
+func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) tCDMModelPoster {
 	// Setting up new CDM model poster
 	CDMPosterModel := tCDMModelPoster{}
 	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, modelID)
