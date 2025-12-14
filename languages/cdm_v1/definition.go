@@ -15,8 +15,6 @@
 package cdm_v1
 
 import (
-	"encoding/json"
-
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
@@ -34,11 +32,13 @@ const (
  */
 
 type (
+	// Definition of a relation type reading
 	TRelationReading struct {
 		InvolvementTypes []string `json:"involvement types"` // The involvement types used in the relation type readings
 		ReadingElements  []string `json:"reading elements"`  // The strings used in relation type reading
 	}
 
+	// Definition of the CDM model structure
 	TCDMModel struct {
 		// For reporting errors
 		reporter *generics.TReporter // The Reporter to be used to report progress, errors, and panics
@@ -79,24 +79,6 @@ type (
  * Functionality related to the CDM model
  *
  */
-
-// Cleaning the model
-func (m *TCDMModel) Clean() {
-	// Resetting all fields
-	m.ModelName = ""
-	m.ConcreteIndividualTypes = map[string]bool{}
-	m.QualityTypes = map[string]bool{}
-	m.RelationTypes = map[string]bool{}
-	m.InvolvementTypes = map[string]bool{}
-	m.TypeName = map[string]string{}
-	m.DomainOfQualityType = map[string]string{}
-	m.BaseTypeOfInvolvementType = map[string]string{}
-	m.RelationTypeOfInvolvementType = map[string]string{}
-	m.InvolvementTypesOfRelationType = map[string]map[string]bool{}
-	m.AlternativeReadingsOfRelationType = map[string]map[string]bool{}
-	m.PrimaryReadingOfRelationType = map[string]string{}
-	m.ReadingDefinition = map[string]TRelationReading{}
-}
 
 // Generating a new element ID
 func (m *TCDMModel) NewElementID() string {
@@ -210,9 +192,27 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
 
 /*
  *
- * Initialisation and creation
+ * Creation & initialisation
  *
  */
+
+// Cleaning a CDM model
+func (m *TCDMModel) Clean() {
+	// Resetting all fields
+	m.ModelName = ""
+	m.ConcreteIndividualTypes = map[string]bool{}
+	m.QualityTypes = map[string]bool{}
+	m.RelationTypes = map[string]bool{}
+	m.InvolvementTypes = map[string]bool{}
+	m.TypeName = map[string]string{}
+	m.DomainOfQualityType = map[string]string{}
+	m.BaseTypeOfInvolvementType = map[string]string{}
+	m.RelationTypeOfInvolvementType = map[string]string{}
+	m.InvolvementTypesOfRelationType = map[string]map[string]bool{}
+	m.AlternativeReadingsOfRelationType = map[string]map[string]bool{}
+	m.PrimaryReadingOfRelationType = map[string]string{}
+	m.ReadingDefinition = map[string]TRelationReading{}
+}
 
 // Creating a new CDM model
 func CreateCDMModel(reporter *generics.TReporter) TCDMModel {
@@ -226,62 +226,3 @@ func CreateCDMModel(reporter *generics.TReporter) TCDMModel {
 	// Return the created model
 	return CDMModel
 }
-
-/*
- *
- * Create models that will retrieved from the modelling bus
- *
- */
-
-// Creating a CDM model listener, which uses a given ModellingBusConnector to listen for models and their updates
-func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModel {
-	// Creating the CDM listener model
-	CDMListenerModel := CreateCDMModel(reporter)
-
-	// Connecting it to the bus
-	CDMListenerModel.ModelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, "")
-
-	// Return the created listener model
-	return CDMListenerModel
-}
-
-// Updating the model's state from given JSON
-func (m *TCDMModel) UpdateModelFromJSON(modelJSON json.RawMessage) bool {
-	m.Clean()
-
-	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
-}
-
-// Listening for model state postings on the modelling bus
-func (m *TCDMModel) ListenForModelStatePostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, handler)
-}
-
-// Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelUpdatePostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, handler)
-}
-
-// Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelConsideringPostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, handler)
-}
-
-// Retrieving the model's state from the modelling bus
-func (m *TCDMModel) GetStateFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	return m.UpdateModelFromJSON(artefactBus.CurrentContent)
-}
-
-// Retrieving the model's updated state from the modelling bus
-func (m *TCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	return m.UpdateModelFromJSON(artefactBus.UpdatedContent)
-}
-
-// Retrieving the model's considered state from the modelling bus
-func (m *TCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	return m.UpdateModelFromJSON(artefactBus.ConsideredContent)
-}
-
-////
-////
-////

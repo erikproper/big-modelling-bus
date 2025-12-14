@@ -29,16 +29,16 @@ import (
 
 type (
 	tModellingBusRepositoryConnector struct {
-		port, // FTP port
-		user, // FTP user
-		server, // FTP server
-		prefix, // FTP topic prefix
-		agentID, // Agent ID to be used in postings on the FTP repository
-		password, // FTP password
-		environmentID, // Modelling environment ID
+		port               string // FTP port
+		user               string // FTP user
+		server             string // FTP server
+		prefix             string // FTP topic prefix
+		agentID            string // Agent ID to be used in postings on the FTP repository
+		password           string // FTP password
+		environmentID      string // Modelling environment ID
 		localWorkDirectory string // Local work directory
 
-		activeTransfers, // Whether to use active transfers for FTP
+		activeTransfers  bool // Whether to use active transfers for FTP
 		singleServerMode bool // Whether to use a single FTP server for all agents and environments
 
 		createdPaths map[string]bool // Paths already created on the FTP server

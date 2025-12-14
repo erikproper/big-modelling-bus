@@ -30,12 +30,12 @@ import (
 
 type (
 	tModellingBusEventsConnector struct {
-		user, // MQTT user
-		port, // MQTT port
-		broker, // MQTT broker
-		prefix, // MQTT topic prefix
-		agentID, // Agent ID to be used in postings on the MQTT bus
-		password, // MQTT password
+		user          string // MQTT user
+		port          string // MQTT port
+		broker        string // MQTT broker
+		prefix        string // MQTT topic prefix
+		agentID       string // Agent ID to be used in postings on the MQTT bus
+		password      string // MQTT password
 		environmentID string // Modelling environment ID
 
 		loadDelay int // Delay (in milliseconds) to allow messages to arrive from the MQTT bus
@@ -43,7 +43,7 @@ type (
 		connectionBeingOpenened bool // Whether the MQTT connection is still being opened.
 		// The opening phase is special, as we need to collect all existing messages on the bus. CHECK!!!
 
-		currentMessages, // Currently known messages on the MQTT bus
+		currentMessages map[string][]byte // Currently known messages on the MQTT bus
 		openingMessages map[string][]byte // Messages known at the opening of the connection to the MQTT bus
 		// We need this to enable deletion of topics, as well as to be able to pro-actively
 		// pull information from the modelling bus

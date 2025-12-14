@@ -34,7 +34,7 @@ type (
 		modellingBusRepositoryConnector *tModellingBusRepositoryConnector // The repository connector
 		modellingBusEventsConnector     *tModellingBusEventsConnector     // The events connector
 
-		agentID, // The Agent ID to be used in postings on the BIG Modelling Bus
+		agentID       string // The Agent ID to be used in postings on the BIG Modelling Bus
 		environmentID string // The Modelling environment ID
 
 		Reporter   *generics.TReporter   // The Reporter to be used to report progress, error, and panics
