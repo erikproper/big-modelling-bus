@@ -42,10 +42,13 @@ type (
 		// For reporting errors
 		reporter *generics.TReporter // The Reporter to be used to report progress, errors, and panics
 
+		// For posting of, and listening to, model updates on the modelling bus
+		modelPoster   connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to post updates of the model
+		modelListener connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to listen for updates of the model
+
 		// General properties for the model
-		ModelName                  string                                 `json:"model name"` // The name of the model
-		ModellingBusArtefactPoster connect.TModellingBusArtefactConnector `json:"-"`          // The Modelling Bus Artefact Poster used to post the model
-		InstanceIDCount            int                                    `json:"-"`          // The counter for instance IDs
+		ModelName       string `json:"model name"` // The name of the model
+		InstanceIDCount int    `json:"-"`          // The counter for instance IDs
 
 		// For types
 		TypeName map[string]string `json:"type names"` // The names of the types, by their IDs
@@ -235,9 +238,9 @@ func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, model
 	// Creating the CDM model poster
 	CDMPosterModel := CreateCDMModel(reporter)
 
-	// Setting up the ModellingBusArtefactPoster
-	CDMPosterModel.ModellingBusArtefactPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
-	CDMPosterModel.ModellingBusArtefactPoster.PrepareForPosting(modelID)
+	// Setting up the modelPoster
+	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMPosterModel.modelPoster.PrepareForPosting(modelID)
 
 	// Return the created model poster
 	return CDMPosterModel
@@ -245,17 +248,17 @@ func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, model
 
 // Posting the model's state
 func (m *TCDMModel) PostState() {
-	m.ModellingBusArtefactPoster.PostJSONArtefactState(json.Marshal(m))
+	m.modelPoster.PostJSONArtefactState(json.Marshal(m))
 }
 
 // Posting the model's update
 func (m *TCDMModel) PostUpdate() {
-	m.ModellingBusArtefactPoster.PostJSONArtefactUpdate(json.Marshal(m))
+	m.modelPoster.PostJSONArtefactUpdate(json.Marshal(m))
 }
 
 // Posting the model's considered update
 func (m *TCDMModel) PostConsidering() {
-	m.ModellingBusArtefactPoster.PostJSONArtefactConsidering(json.Marshal(m))
+	m.modelPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }
 
 /*
@@ -265,35 +268,35 @@ func (m *TCDMModel) PostConsidering() {
  */
 
 // Creating a CDM model listener, which uses a given ModellingBusConnector to listen for models and their updates
-func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter generics.TErrorReporter) TCDMModel {
-	// Creating the CDM model listener
+func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModel {
+	// Creating the CDM listener model
 	CDMListenerModel := CreateCDMModel(reporter)
 
-	// Creating the CDM model listener
-	ModellingBusCDMModelListener := connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	// Connecting it to the bus
+	CDMListenerModel.modelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 
-	// Return the created model listener
+	// Return the created listener model
 	return CDMListenerModel
 }
 
-// Retrieving the model's state
+// Updating the model's state from given JSON
+func (m *TCDMModel) UpdateModelFromJSON(modelJSON json.RawMessage) bool {
+	m.Clean()
+
+	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
+}
+
+// Retrieving the model's state from the modelling bus
 func (m *TCDMModel) GetStateFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	// Cleaning the present copy of the model
-	m.Clean()
-
-	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(artefactBus.StateContent, m))
+	return m.UpdateModelFromJSON(artefactBus.CurrentContent)
 }
 
+// Retrieving the model's updated state from the modelling bus
 func (m *TCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	m.Clean()
-	err := json.Unmarshal(artefactBus.UpdatedContent, m)
-
-	return err == nil
+	return m.UpdateModelFromJSON(artefactBus.UpdatedContent)
 }
 
+// Retrieving the model's considered state from the modelling bus
 func (m *TCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	m.Clean()
-	err := json.Unmarshal(artefactBus.ConsideredContent, m)
-
-	return err == nil
+	return m.UpdateModelFromJSON(artefactBus.ConsideredContent)
 }
