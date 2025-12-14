@@ -20,7 +20,10 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
-// Defining constants
+/*
+ * Defining constants
+ */
+
 const (
 	jsonArtefactsPathElement = "artefacts/json" // JSON artefacts path element
 	rawArtefactsPathElement  = "artefacts/raw"  // Raw artefacts path element
@@ -30,7 +33,10 @@ const (
 	artefactUpdatePathElement      = "update"      // Artefact update path element
 )
 
-// Defining the artefact connector
+/*
+ * Defining the artefact connector
+ */
+
 type (
 	TModellingBusArtefactConnector struct {
 		ModellingBusConnector TModellingBusConnector // The modelling bus connector to be used

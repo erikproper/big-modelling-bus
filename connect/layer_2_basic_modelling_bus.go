@@ -28,6 +28,7 @@ import (
 /*
  * Defining the modelling bus connector
  */
+
 type (
 	TModellingBusConnector struct {
 		modellingBusRepositoryConnector *tModellingBusRepositoryConnector // The repository connector
@@ -188,6 +189,7 @@ func (b *TModellingBusConnector) getStreamedEvent(agentID, topicPath string) ([]
  * Listening for postings
  */
 
+// Listen for raw file postings on the modelling bus
 func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath, localFileName string, postingHandler func(string, string)) {
 	// Listen for raw file related events on the modelling bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
@@ -195,6 +197,7 @@ func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath, local
 	})
 }
 
+// Listen for JSON file postings on the modelling bus
 func (b *TModellingBusConnector) listenForJSONFilePostings(agentID, topicPath string, postingHandler func([]byte, string)) {
 	// Listen for JSON file related events on the modelling bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
@@ -202,6 +205,7 @@ func (b *TModellingBusConnector) listenForJSONFilePostings(agentID, topicPath st
 	})
 }
 
+// Listen for streamed postings on the modelling bus
 func (b *TModellingBusConnector) listenForStreamedPostings(agentID, topicPath string, postingHandler func([]byte, string)) {
 	// Listen for streamed events on the modelling bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
@@ -213,6 +217,7 @@ func (b *TModellingBusConnector) listenForStreamedPostings(agentID, topicPath st
  * Deleting postings
  */
 
+// Delete postings
 func (b *TModellingBusConnector) deletePosting(topicPath string) {
 	// Delete the posting both from the modelling bus and the repository
 	b.modellingBusEventsConnector.deletePostingPath(topicPath)
@@ -225,8 +230,10 @@ func (b *TModellingBusConnector) deletePosting(topicPath string) {
  *
  */
 
+// Delete a given environment
 func (b *TModellingBusConnector) DeleteEnvironment(environment ...string) {
 	// Determine the environment to delete
+	// This could be the present environment, or the specified one
 	environmentToDelete := b.environmentID
 	if len(environment) > 0 {
 		environmentToDelete = environment[0]
@@ -240,8 +247,9 @@ func (b *TModellingBusConnector) DeleteEnvironment(environment ...string) {
 	b.modellingBusRepositoryConnector.deleteEnvironment(environmentToDelete)
 }
 
+// Create the modelling bus connector
 func CreateModellingBusConnector(configData *generics.TConfigData, reporter *generics.TReporter, postingOnly bool) TModellingBusConnector {
-	// Create the modelling bus connector
+	// Create the modelling bus connector struct
 	modellingBusConnector := TModellingBusConnector{}
 	modellingBusConnector.environmentID = configData.GetValue("", "environment").String()
 	modellingBusConnector.agentID = configData.GetValue("", "agent").String()
