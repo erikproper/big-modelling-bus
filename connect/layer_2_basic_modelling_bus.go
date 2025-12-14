@@ -136,7 +136,7 @@ func (b *TModellingBusConnector) getJSONFromTemporaryFile(tempFilePath, timestam
 
 	// Handle potential errors
 	if err != nil {
-		b.Reporter.Error("Something went wrong while retrieving file. %s", err)
+		b.Reporter.ReportError("Something went wrong while retrieving file.", err)
 		b.Reporter.Error("Temporary file to be opened: %s", tempFilePath)
 		return []byte{}, ""
 	}

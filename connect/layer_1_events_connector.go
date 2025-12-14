@@ -84,12 +84,15 @@ func (e *tModellingBusEventsConnector) mqttAgentTopicPath(agentID, topicPath str
 
 // Connection lost handler
 func (e *tModellingBusEventsConnector) connectionLostHandler(c mqtt.Client, err error) {
-	e.reporter.Panic("MQTT connection lost. %s", err)
+	e.reporter.PanicError("MQTT connection lost.", err)
 }
 
 // Wait for a while to allow messages to arrive from the MQTT bus
 func (e *tModellingBusEventsConnector) waitForMQTT() {
+	// Report we're going to sleep
 	e.reporter.Progress(generics.ProgressLevelDetailed, "Sleeping for %d miliseconds to collect information from the MQTT bus.", e.loadDelay)
+
+	// Now sleep for a while
 	time.Sleep(time.Duration(e.loadDelay) * time.Second / 1000)
 }
 
@@ -172,7 +175,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
 		// Checking for errors
 		err := token.Error()
 		if err != nil {
-			e.reporter.Error("Error connecting to the MQTT broker. %s", err)
+			e.reporter.ReportError("Error connecting to the MQTT broker.", err)
 
 			time.Sleep(5 * time.Second)
 		} else {

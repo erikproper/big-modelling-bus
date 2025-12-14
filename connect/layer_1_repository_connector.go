@@ -82,7 +82,7 @@ func (r *tModellingBusRepositoryConnector) ftpTopicPath(topicPath string) string
  */
 
 // Connecting to the FTP server
-func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, error) {
+func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, bool) {
 	// Define the FTP connection configuration
 	config := goftp.Config{}
 	config.User = r.user
@@ -93,12 +93,12 @@ func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, error) {
 	// Finally, connect to the FTP server
 	client, err := goftp.DialConfig(config, serverDefinition)
 	if err != nil {
-		r.reporter.Error("Error connecting to the FTP server. %s", err)
-		return client, err
+		r.reporter.ReportError("Error connecting to the FTP server. %s", err)
+		return client, false
 	}
 
 	// Return the connected client
-	return client, err
+	return client, true
 }
 
 // Make sure the given repository file path exists on the FTP server
@@ -106,7 +106,7 @@ func (r *tModellingBusRepositoryConnector) mkRepositoryFilePath(remoteFilePath s
 	// Create the path on the FTP server, if not already done
 	if !r.createdPaths[remoteFilePath] {
 		// Connect to the FTP server
-		if client, err := r.ftpConnect(); err == nil {
+		if client, ok := r.ftpConnect(); ok {
 			pathCovered := ""
 			// Create all directories in the path, if not already existing
 			for _, Directory := range strings.Split(remoteFilePath, "/") {
@@ -138,23 +138,25 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, localFilePath, tim
 
 	// Open the local file for reading
 	file, err := os.Open(filepath.FromSlash(localFilePath))
+
+	// Handle potential errors
 	if err != nil {
-		r.reporter.Error("Error opening File for reading. %s", err)
+		r.reporter.ReportError("Error opening File for reading.", err)
 		return repositoryEvent
 	}
 
 	// Connect to the FTP server
-	client, err := r.ftpConnect()
-	if err != nil {
+	client, ok := r.ftpConnect()
+	if !ok {
 		return repositoryEvent
 	}
 
 	// Store the file on the FTP server
 	err = client.Store(remotePayloadFileNamePath, file)
 
-	// Handle potential errors
+	// Handle potential errors when opening the file
 	if err != nil {
-		r.reporter.Error("Error uploading file to ftp server. %s", err)
+		r.reporter.ReportError("Error uploading file to ftp server.", err)
 		r.reporter.Error("For remote file path: %s", remotePayloadFileNamePath)
 		return repositoryEvent
 	}
@@ -193,7 +195,7 @@ func deleteRepositoryPath(client *goftp.Client, deletePath string) {
 
 func (r *tModellingBusRepositoryConnector) deletePath(deletePath string) {
 	// Connect to the FTP server
-	if client, err := r.ftpConnect(); err == nil {
+	if client, ok := r.ftpConnect(); ok {
 		// Then, delete the given path from the FTP server
 		deleteRepositoryPath(client, deletePath)
 	}
@@ -214,9 +216,9 @@ func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json 
 	localFilePath := r.localFilePathFor(generics.JSONFileName)
 
 	// Create a temporary local file with the JSON record
-	err := os.WriteFile(localFilePath, json, 0644)
-	if err != nil {
-		r.reporter.Error("Error writing to temporary file. %s", err)
+	if err := os.WriteFile(localFilePath, json, 0644); err != nil {
+		r.reporter.ReportError("Error writing to temporary file.", err)
+		return tRepositoryEvent{}
 	}
 
 	// Cleanup the temporary file afterwards
@@ -245,7 +247,7 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	// Connect to the FTP server
 	client, err := goftp.DialConfig(config, serverConnection)
 	if err != nil {
-		r.reporter.Error("Something went wrong connecting to the FTP server: \"%s\"", err)
+		r.reporter.ReportError("Something went wrong connecting to the FTP server.", err)
 		return ""
 	}
 
@@ -255,7 +257,7 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	// Download file to local storage
 	File, err := os.Create(localFileName)
 	if err != nil {
-		r.reporter.Error("Something went wrong creating local file: \"%s\"", err)
+		r.reporter.ReportError("Something went wrong creating local file.", err)
 		return ""
 	}
 
@@ -263,9 +265,8 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	defer File.Close()
 
 	// Retrieve the file from the FTP server
-	err = client.Retrieve(repositoryEvent.FilePath, File)
-	if err != nil {
-		r.reporter.Error("Something went wrong retrieving file: \"%s\"", err)
+	if err = client.Retrieve(repositoryEvent.FilePath, File); err != nil {
+		r.reporter.ReportError("Something went wrong retrieving file.", err)
 		r.reporter.Error("Was trying to retrieve: %s", repositoryEvent.FilePath)
 		return ""
 	}

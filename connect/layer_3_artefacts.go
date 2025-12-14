@@ -94,17 +94,12 @@ type TJSONDelta struct {
 }
 
 // Posting JSON delta
-func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, oldStateJSON, newStateJSON []byte, err error) {
-	// Check for errors
-	if err != nil {
-		b.ModellingBusConnector.Reporter.Error("Something went wrong when converting to JSON. %s", err)
-		return
-	}
-
+func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, oldStateJSON, newStateJSON []byte) {
 	// Create the delta
 	deltaOperationsJSON, err := generics.JSONDiff(oldStateJSON, newStateJSON)
-	if err != nil {
-		b.ModellingBusConnector.Reporter.Error("Something went wrong running the JSON diff. %s", err)
+
+	// Handle potential errors
+	if b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong running the JSON diff.", err) {
 		return
 	}
 
@@ -118,17 +113,17 @@ func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, ol
 	deltaJSON, err := json.Marshal(delta)
 
 	// Post the delta JSON, if no error occurred during marshalling
-	b.ModellingBusConnector.maybePostJSONAsFile(deltaTopicPath, deltaJSON, delta.Timestamp, "Something went wrong JSONing the diff patch. %s", err)
+	b.ModellingBusConnector.maybePostJSONAsFile(deltaTopicPath, deltaJSON, delta.Timestamp, "Something went wrong JSONing the diff patch.", err)
 }
 
 // Applying a JSON delta to a given current JSON state
 func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.RawMessage, deltaJSON []byte) (json.RawMessage, bool) {
 	// Unmarshal the delta
-
 	delta := TJSONDelta{}
 	err := json.Unmarshal(deltaJSON, &delta)
-	if err != nil {
-		b.ModellingBusConnector.Reporter.Error("Something went wrong unJSONing the received diff patch. %s", err)
+
+	// Handle potential errors
+	if b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong unJSONing the received diff patch.", err) {
 		return currentJSONState, false
 	}
 
@@ -140,9 +135,9 @@ func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.Ra
 
 	// Apply the delta
 	newJSONState, err := generics.JSONApplyPatch(currentJSONState, delta.Operations)
-	if err != nil {
-		// When applying the patch didn't work, we report a warning, and return the current state
-		b.ModellingBusConnector.Reporter.Error("Applying patch didn't work. %s", err)
+
+	// Handle potential errors
+	if b.ModellingBusConnector.Reporter.MaybeReportError("Applying patch didn't work", err) {
 		return currentJSONState, false
 	}
 
@@ -183,15 +178,8 @@ func (b *TModellingBusArtefactConnector) updateConsideringJSONArtefact(json []by
 }
 
 // Checking for JSON issues
-func (b *TModellingBusArtefactConnector) foundJSONIssue(err error) bool {
-	// Check for errors
-	if err != nil {
-		b.ModellingBusConnector.Reporter.Error("Something went wrong when converting to JSON. %s", err)
-		return true
-	}
-
-	// No issues found
-	return false
+func (b *TModellingBusArtefactConnector) checkArtefactJSONIssue(err error) bool {
+	return b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong when converting to JSON.", err)
 }
 
 /*
@@ -219,7 +207,7 @@ func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFi
 // Posting JSON artefact state
 func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte, err error) {
 	// Check for errors
-	if b.foundJSONIssue(err) {
+	if b.checkArtefactJSONIssue(err) {
 		return
 	}
 
@@ -237,38 +225,38 @@ func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte,
 // Posting JSON artefact update
 func (b *TModellingBusArtefactConnector) PostJSONArtefactUpdate(updatedStateJSON []byte, err error) {
 	// Check for errors
-	if b.foundJSONIssue(err) {
+	if b.checkArtefactJSONIssue(err) {
 		return
 	}
 
 	// Ensure the state has been communicated
 	if !b.stateCommunicated {
-		b.PostJSONArtefactState(updatedStateJSON, err)
+		b.PostJSONArtefactState(updatedStateJSON, nil)
 	}
 
 	// Post the JSON artefact update
 	b.UpdatedContent = updatedStateJSON
 	b.ConsideredContent = updatedStateJSON
-	b.postJSONDelta(b.jsonArtefactsUpdateTopicPath(b.ArtefactID), b.CurrentContent, b.UpdatedContent, err)
+	b.postJSONDelta(b.jsonArtefactsUpdateTopicPath(b.ArtefactID), b.CurrentContent, b.UpdatedContent)
 }
 
 // Posting JSON considered artefact
 func (b *TModellingBusArtefactConnector) PostJSONArtefactConsidering(consideringStateJSON []byte, err error) {
 	// Check for errors
-	if b.foundJSONIssue(err) {
+	if b.checkArtefactJSONIssue(err) {
 		return
 	}
 
 	// Ensure the state has been communicated
 	if !b.stateCommunicated {
-		b.PostJSONArtefactState(b.CurrentContent, err)
+		b.PostJSONArtefactState(b.CurrentContent, nil)
 	}
 
 	// Post the JSON considered artefact
 	b.ConsideredContent = consideringStateJSON
 
 	// Post the JSON considered artefact
-	b.postJSONDelta(b.jsonArtefactsConsideringTopicPath(b.ArtefactID), b.UpdatedContent, b.ConsideredContent, err)
+	b.postJSONDelta(b.jsonArtefactsConsideringTopicPath(b.ArtefactID), b.UpdatedContent, b.ConsideredContent)
 }
 
 /*

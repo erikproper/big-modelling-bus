@@ -40,7 +40,7 @@ func (r *TReporter) Error(message string, context ...any) {
 	r.errorReporter(fmt.Sprintf(message, context...))
 }
 
-func (r *TReporter) ReportError(message string, err error) bool {
+func (r *TReporter) ReportError(message string, err error) {
 	r.Error(message+" %s", err)
 }
 
@@ -56,6 +56,12 @@ func (r *TReporter) MaybeReportError(message string, err error) bool {
 
 func (r *TReporter) Panic(message string, context ...any) {
 	r.Error(message+" Panicking.", context...)
+
+	panic("")
+}
+
+func (r *TReporter) PanicError(message string, err error) {
+	r.Panic(message+" %s", err)
 
 	panic("")
 }
