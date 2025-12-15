@@ -41,6 +41,12 @@ func (l *TCDMModelListener) UniteIDSets(mp func(TCDMModel) map[string]bool) map[
 	return result
 }
 
+func (l *TCDMModelListener) QualityTypes() map[string]bool {
+	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
+		return m.QualityTypes
+	})
+}
+
 func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
 	// Setting up a new CDM model listener
 	cdmModelListener := TCDMModelListener{}
