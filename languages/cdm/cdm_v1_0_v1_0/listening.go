@@ -51,7 +51,7 @@ func (l *TCDMModelListener) QualityTypes() map[string]bool {
 	})
 }
 
-func (l *TCDMModelLListener) ConcreteIndividualTypes() map[string]bool {
+func (l *TCDMModelListener) ConcreteIndividualTypes() map[string]bool {
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
 		return m.ConcreteIndividualTypes
 	})
