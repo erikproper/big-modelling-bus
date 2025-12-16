@@ -50,7 +50,7 @@ func (l *TCDMModelListener) UpdateModelsFromBus() {
 // // HERE
 
 // Listening for model state postings on the modelling bus
-func (l *TCDMModelListener) LListenForModelStatePostings(agentId, modelID string, handler func()) {
+func (l *TCDMModelListener) ListenForModelStatePostings(agentId, modelID string, handler func()) {
 	l.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
@@ -58,7 +58,7 @@ func (l *TCDMModelListener) LListenForModelStatePostings(agentId, modelID string
 }
 
 // Listening for model update postings on the modelling bus
-func (l *TCDMModelListener) LListenForModelUpdatePostings(agentId, modelID string, handler func()) {
+func (l *TCDMModelListener) ListenForModelUpdatePostings(agentId, modelID string, handler func()) {
 	l.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
@@ -66,7 +66,7 @@ func (l *TCDMModelListener) LListenForModelUpdatePostings(agentId, modelID strin
 }
 
 // Listening for model considering postings on the modelling bus
-func (l *TCDMModelListener) LListenForModelConsideringPostings(agentId, modelID string, handler func()) {
+func (l *TCDMModelListener) ListenForModelConsideringPostings(agentId, modelID string, handler func()) {
 	l.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
@@ -74,17 +74,17 @@ func (l *TCDMModelListener) LListenForModelConsideringPostings(agentId, modelID 
 }
 
 // Listening for model state postings on the modelling bus
-func (m *TCDMModel) ListenForModelStatePostings(agentId, modelID string, handler func()) {
+func (m *TCDMModel) LListenForModelStatePostings(agentId, modelID string, handler func()) {
 	m.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, handler)
 }
 
 // Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelUpdatePostings(agentId, modelID string, handler func()) {
+func (m *TCDMModel) LListenForModelUpdatePostings(agentId, modelID string, handler func()) {
 	m.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, handler)
 }
 
 // Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelConsideringPostings(agentId, modelID string, handler func()) {
+func (m *TCDMModel) LListenForModelConsideringPostings(agentId, modelID string, handler func()) {
 	m.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, handler)
 }
 
