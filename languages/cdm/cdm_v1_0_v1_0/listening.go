@@ -18,7 +18,8 @@
 package cdm_v1_0_v1_0
 
 import (
-	fmt
+	"fmt"
+
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
