@@ -1,6 +1,6 @@
 /*
  *
- * Module:    BIG Modelling Bus
+ * Module:    BIG Modelling Bus, Version 1
  * Package:   Generic
  * Component: JSON Operations
  *

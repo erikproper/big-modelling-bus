@@ -1,6 +1,6 @@
 /*
  *
- * Module:    BIG Modelling Bus
+ * Module:    BIG Modelling Bus, Version 1
  * Package:   Languages/Conceptual Domain Modelling, Version 1
  * Component: Definition
  *

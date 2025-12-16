@@ -1,5 +1,6 @@
+[ ] Clean CDM listener and poster
+
 [ ] Document
-[ ] Fix layout comments 
 
 [ ] Command lines:
 mbus 
@@ -22,10 +23,6 @@ mbus
   -delete_experiment <e>
 
 [ ] bus_listener in GO instead of mosquitto
-
-[ ] CDM listener and poster as cdm rest repos
-
-[ ] Clean cdm_listener code
 
 [ ] Clean code
 
