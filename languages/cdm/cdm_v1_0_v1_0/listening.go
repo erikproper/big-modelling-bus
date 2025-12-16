@@ -51,6 +51,7 @@ func (l *TCDMModelListener) UpdateModelsFromBus() {
 
 // Listening for model state postings on the modelling bus
 func (l *TCDMModelListener) ListenForModelStatePostings(agentId, modelID string, handler func()) {
+	l.reporter.Progress(generics.ProgressLevelBasic, "Listening for model state postings for model %s from agent %s", modelID, agentId)
 	l.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
@@ -71,21 +72,6 @@ func (l *TCDMModelListener) ListenForModelConsideringPostings(agentId, modelID s
 		l.UpdateModelsFromBus()
 		handler()
 	})
-}
-
-// Listening for model state postings on the modelling bus
-func (m *TCDMModel) LListenForModelStatePostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, handler)
-}
-
-// Listening for model update postings on the modelling bus
-func (m *TCDMModel) LListenForModelUpdatePostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, handler)
-}
-
-// Listening for model update postings on the modelling bus
-func (m *TCDMModel) LListenForModelConsideringPostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, handler)
 }
 
 /*
