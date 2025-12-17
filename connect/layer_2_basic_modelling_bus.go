@@ -66,7 +66,7 @@ func (b *TModellingBusConnector) postFile(topicPath, localFilePath, timestamp st
 	message, err := json.Marshal(event)
 
 	// Post the event, if no error occurred during marshalling
-	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
+	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data:", err)
 }
 
 // Posting a JSON message as a file to the repository and announcing it on the modelling bus
@@ -78,7 +78,7 @@ func (b *TModellingBusConnector) postJSONAsFile(topicPath string, jsonMessage []
 	message, err := json.Marshal(event)
 
 	// Post the event, if no error occurred during marshalling
-	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
+	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data:", err)
 }
 
 // Posting a JSON message as a file to the modelling bus
@@ -103,7 +103,7 @@ func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessag
 	message, err := json.Marshal(event)
 
 	// Post the event, if no error occurred during marshalling
-	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
+	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data:", err)
 }
 
 /*
@@ -117,7 +117,7 @@ func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, loc
 	err := json.Unmarshal(message, &event)
 
 	// Handle potential errors
-	if b.Reporter.MaybeReportError("Something went wrong unmarshalling the repository event.", err) {
+	if b.Reporter.MaybeReportError("Something went wrong unmarshalling the repository event:", err) {
 		return "", ""
 	}
 
@@ -138,7 +138,7 @@ func (b *TModellingBusConnector) getJSONFromTemporaryFile(tempFilePath, timestam
 
 	// Handle potential errors
 	if err != nil {
-		b.Reporter.ReportError("Something went wrong while retrieving the file.", err)
+		b.Reporter.ReportError("Something went wrong while retrieving the file:", err)
 		b.Reporter.Error("Temporary file to be opened: %s", tempFilePath)
 		return []byte{}, ""
 	}
@@ -172,7 +172,7 @@ func (b *TModellingBusConnector) splitStreamedEventFromMessage(message []byte) (
 	err := json.Unmarshal(message, &event)
 
 	// Handle potential errors
-	if b.Reporter.MaybeReportError("Something went wrong unmarshalling the streamed event.", err) {
+	if b.Reporter.MaybeReportError("Something went wrong unmarshalling the streamed event:", err) {
 		return []byte{}, ""
 	}
 

@@ -106,7 +106,7 @@ func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, ol
 	deltaOperationsJSON, err := generics.JSONDiff(oldStateJSON, newStateJSON)
 
 	// Handle potential errors
-	if b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong running the JSON diff.", err) {
+	if b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong running the JSON diff:", err) {
 		return
 	}
 
@@ -120,7 +120,7 @@ func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, ol
 	deltaJSON, err := json.Marshal(delta)
 
 	// Post the delta JSON, if no error occurred during marshalling
-	b.ModellingBusConnector.maybePostJSONAsFile(deltaTopicPath, deltaJSON, delta.Timestamp, "Something went wrong JSONing the diff patch.", err)
+	b.ModellingBusConnector.maybePostJSONAsFile(deltaTopicPath, deltaJSON, delta.Timestamp, "Something went wrong JSONing the diff patch:", err)
 }
 
 // Applying a JSON delta to a given current JSON state
@@ -130,7 +130,7 @@ func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.Ra
 	err := json.Unmarshal(deltaJSON, &delta)
 
 	// Handle potential errors
-	if b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong unJSONing the received diff patch.", err) {
+	if b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong unJSONing the received diff patch:", err) {
 		return currentJSONState, false
 	}
 
@@ -144,7 +144,7 @@ func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.Ra
 	newJSONState, err := generics.JSONApplyPatch(currentJSONState, delta.Operations)
 
 	// Handle potential errors
-	if b.ModellingBusConnector.Reporter.MaybeReportError("Applying the diff patch did not work.", err) {
+	if b.ModellingBusConnector.Reporter.MaybeReportError("Applying the diff patch did not work:", err) {
 		return currentJSONState, false
 	}
 

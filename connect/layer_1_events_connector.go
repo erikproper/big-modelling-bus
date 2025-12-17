@@ -175,7 +175,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
 		// Checking for errors
 		err := token.Error()
 		if err != nil {
-			e.reporter.ReportError("Error connecting to the MQTT broker.", err)
+			e.reporter.ReportError("Error connecting to the MQTT broker:", err)
 
 			time.Sleep(5 * time.Second)
 		} else {
