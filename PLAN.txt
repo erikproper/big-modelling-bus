@@ -1,7 +1,3 @@
-[ ] Clean & document CDM poster
-
-[ ] Clean & document mbus_post
-
 [ ] Command lines:
   -delete_experiment <e>
   -delete
