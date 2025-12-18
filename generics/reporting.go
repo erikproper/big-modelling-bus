@@ -115,3 +115,15 @@ func CreateReporter(level int, errorReporter TErrorReporter, progressReporter TP
 
 	return &reporter
 }
+
+/*
+ * Default progress and error reporters
+ */
+
+func ReportProgress(message string) {
+	fmt.Println("PROGRESS:", message)
+}
+
+func ReportError(message string) {
+	fmt.Println("ERROR:", message)
+}
