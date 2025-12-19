@@ -115,6 +115,7 @@ func (e *tModellingBusEventsConnector) reportFoundTopics() {
 
 // Collect all MQTT topics for a given modelling environment
 func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(environmentID string) {
+	e.reporter.Progress(generics.ProgressLevelBasic, "NOT posting only, so collecting existing topics and messages from the MQTT bus.")
 	e.reporter.Progress(generics.ProgressLevelDetailed, "Collecting topics for modelling environment: %s", environmentID)
 	token := e.client.Subscribe(e.mqttEnvironmentTopicListFor(environmentID), 0, func(client mqtt.Client, msg mqtt.Message) {
 		// Get topic and payload
@@ -191,7 +192,6 @@ func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
 		e.reporter.Progress(generics.ProgressLevelBasic, "Connected to the MQTT broker.")
 
 		if !postingOnly {
-			e.reporter.Progress(generics.ProgressLevelBasic, "NOT posting only, so collecting existing topics and messages from the MQTT bus.")
 			// Unless we will be postingOnly, continuously connect all used topics underneath the
 			// topic root, and their messages.
 			// We need this information to enable deletion of topics, as well as to be able to
