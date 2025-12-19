@@ -249,6 +249,8 @@ func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath strin
 		message = e.currentMessages[mqttTopicPath]
 	}
 
+	e.reporter.Progress(generics.ProgressLevelDetailed, "Pro-actively retrieved message from topic path '%s': %s", mqttTopicPath, string(message))
+
 	return message
 }
 
